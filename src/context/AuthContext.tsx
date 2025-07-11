@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('user', JSON.stringify(loggedInUser));
       setUser(loggedInUser);
       router.push('/artist/dashboard');
-    } else if (email === 'admin@stage.live') {
+    } else if (email === 'admin@cloudstage.live') {
       loggedInUser = { email, role: 'admin' };
       localStorage.setItem('user', JSON.stringify(loggedInUser));
       setUser(loggedInUser);
