@@ -2,6 +2,7 @@
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Event, EventStatus } from '@/lib/types';
+import { dummyEvents } from '@/lib/events';
 
 interface EventContextType {
   events: Event[];
@@ -20,14 +21,13 @@ export function EventProvider({ children }: { children: ReactNode }) {
       if (storedEvents) {
         setEvents(JSON.parse(storedEvents));
       } else {
-        // If no events in storage, start with an empty array
-        localStorage.setItem('events', JSON.stringify([]));
-        setEvents([]);
+        localStorage.setItem('events', JSON.stringify(dummyEvents));
+        setEvents(dummyEvents);
       }
     } catch (error) {
       console.error("Failed to parse events from localStorage", error);
-      localStorage.setItem('events', JSON.stringify([])); // Reset if parsing fails
-      setEvents([]);
+      localStorage.setItem('events', JSON.stringify(dummyEvents)); 
+      setEvents(dummyEvents);
     }
   }, []);
 
