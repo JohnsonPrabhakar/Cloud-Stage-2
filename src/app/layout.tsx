@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 import { EventProvider } from '@/context/EventContext';
 import { TicketProvider } from '@/context/TicketContext';
+import { cn } from '@/lib/utils';
 
 export default function RootLayout({
   children,
@@ -18,7 +19,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=PT+Sans:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet" />
       </head>
-      <body className="min-h-screen bg-background font-sans antialiased">
+      <body className={cn("min-h-screen bg-background font-sans antialiased", "gradient-background")}>
         <AuthProvider>
           <EventProvider>
             <TicketProvider>
