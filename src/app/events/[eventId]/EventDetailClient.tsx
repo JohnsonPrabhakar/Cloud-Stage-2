@@ -32,7 +32,7 @@ interface ChatMessage {
 export default function EventDetailClient({ event }: { event: Event | undefined }) {
   const { hasTicket } = useTickets();
   const { artists, followArtist, unfollowArtist } = useArtists();
-  const { user }_ = useAuth();
+  const { user } = useAuth();
   const { giveThumbsUp } = useEvents();
   const router = useRouter();
   const { toast } = useToast();
@@ -226,6 +226,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                 <div key={msg.id} className="flex gap-2 text-sm">
                                     <Avatar className="h-8 w-8">
                                         <AvatarFallback>{msg.name.charAt(0).toUpperCase()}</AvatarFallback>
+
                                     </Avatar>
                                     <div className="flex-1">
                                         <div className="flex items-baseline gap-2">
