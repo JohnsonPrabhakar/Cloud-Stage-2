@@ -1,7 +1,3 @@
-
-
-
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -158,18 +154,21 @@ export default function EventForm({ eventId }: { eventId?: string }) {
         const eventToUpdate = events.find(e => e.id === eventId);
         if (eventToUpdate) {
             const updatedEvent = {
-                ...eventToUpdate, // Keep original fields like artist, email, isBoosted
-                ...data, // Overwrite with new form data
-                id: eventId, // Ensure ID is correct
+                ...eventToUpdate,
+                ...data,
                 date: combinedDateTime.toISOString(),
-                status: 'Pending' as const, // Always reset status on edit for re-approval
+                status: 'Pending' as const,
                 bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             };
+            console.log("Updating event with data:", updatedEvent);
             updateEvent(updatedEvent);
             toast({
-                title: "Event Updated!",
+                title: "Event updated successfully",
                 description: "Your event has been resubmitted for approval.",
             });
+            router.push('/artist/dashboard');
+        } else {
+            toast({ variant: 'destructive', title: "Error", description: "Could not find the event to update."});
         }
     } else {
         const newEvent = {
@@ -187,9 +186,8 @@ export default function EventForm({ eventId }: { eventId?: string }) {
             title: "Event Created!",
             description: "Your event has been submitted for approval.",
         });
+        router.push('/artist/dashboard');
     }
-    
-    router.push('/artist/dashboard');
   }
   
   if (isLoading) {
@@ -299,11 +297,11 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                     />
                 </div>
                 
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <FormItem>
                         <FormLabel>Date & Time</FormLabel>
-                        <div className="flex gap-2">
-                             <FormField
+                         <div className="flex gap-2">
+                            <FormField
                             control={form.control}
                             name="date"
                             render={({ field }) => (
@@ -340,7 +338,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                                 </FormItem>
                             )}
                             />
-                        </div>
+                         </div>
                     </FormItem>
                      <FormField
                         control={form.control}
@@ -351,7 +349,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                             <FormControl>
                                 <Input type="number" placeholder="Enter 0 for a free event" {...field} disabled={!isVerified} />
                             </FormControl>
-                             <FormDescription className={!isVerified ? '' : 'hidden'}>
+                             <FormDescription className={cn(isVerified && 'hidden')}>
                                 Ticket pricing is available for verified artists only.
                              </FormDescription>
                              <FormMessage/>
