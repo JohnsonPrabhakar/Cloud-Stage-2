@@ -1,16 +1,12 @@
 'use client';
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
+import type { PurchasedTicket, GuestDetails } from '@/lib/types';
 
-type PurchasedTicket = {
-    eventId: string;
-    purchaseDate: string;
-    userEmail: string;
-}
 
 interface TicketContextType {
   purchasedTickets: PurchasedTicket[];
-  purchaseTicket: (eventId: string, userEmail: string) => void;
+  purchaseTicket: (eventId: string, userEmail: string, guestDetails?: GuestDetails) => void;
   hasTicket: (eventId: string) => boolean;
 }
 
@@ -36,11 +32,12 @@ export function TicketProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('purchasedTickets', JSON.stringify(updatedTickets));
   };
 
-  const purchaseTicket = (eventId: string, userEmail: string) => {
+  const purchaseTicket = (eventId: string, userEmail: string, guestDetails?: GuestDetails) => {
     const newTicket: PurchasedTicket = {
         eventId,
         userEmail,
-        purchaseDate: new Date().toISOString()
+        purchaseDate: new Date().toISOString(),
+        guestDetails
     };
     const updatedTickets = [...purchasedTickets, newTicket];
     updateTicketsInStorage(updatedTickets);

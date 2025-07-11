@@ -88,3 +88,17 @@ export type VerificationRequest = {
     reason: string;
     rejectionReason?: string;
 };
+
+// Guest checkout and ticketing
+export type GuestDetails = {
+    name: string;
+    email: string;
+    phone: string;
+};
+
+export type PurchasedTicket = {
+    eventId: string;
+    purchaseDate: string;
+    userEmail: string; // Can be guest email or logged-in user email
+    guestDetails?: GuestDetails;
+};
