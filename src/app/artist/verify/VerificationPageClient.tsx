@@ -76,15 +76,11 @@ export default function VerificationPageClient() {
   const { artists, submitVerificationRequest } = useArtists();
   const { toast } = useToast();
   
-  const [currentArtist, setCurrentArtist] = useState<Artist | undefined>(undefined);
   const [isFileUploading, setIsFileUploading] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthLoading && user && artists.length > 0) {
-      const artist = artists.find(a => a.email === user.email);
-      setCurrentArtist(artist);
-    }
-  }, [isAuthLoading, user, artists]);
+  const currentArtist = !isAuthLoading && artists.length > 0
+    ? artists.find(a => a.email === user?.email)
+    : undefined;
 
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationFormSchema),
@@ -124,7 +120,7 @@ export default function VerificationPageClient() {
     router.push('/artist/dashboard');
   };
   
-  if (isAuthLoading || !currentArtist) {
+  if (isAuthLoading || artists.length === 0 || !currentArtist) {
     return <VerificationFormSkeleton />;
   }
 
