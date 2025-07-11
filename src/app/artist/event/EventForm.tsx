@@ -58,8 +58,10 @@ export default function EventForm({ eventId }: { eventId?: string }) {
     defaultValues: {
       title: '',
       description: '',
+      category: '' as any, // Initialize to prevent uncontrolled -> controlled warning
       genre: 'Various',
       language: 'English',
+      time: '', // Initialize to prevent uncontrolled -> controlled warning
       duration: 90,
       ticketPrice: 0,
       streamUrl: '',
@@ -248,7 +250,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                     name="date"
                     render={({ field }) => (
                         <FormItem className="flex flex-col">
-                        <FormLabel>Date & Time</FormLabel>
+                        <FormLabel>Date</FormLabel>
                         <Popover>
                             <PopoverTrigger asChild>
                             <FormControl>
@@ -286,7 +288,8 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                     control={form.control}
                     name="time"
                     render={({ field }) => (
-                        <FormItem className="flex flex-col justify-end">
+                        <FormItem className="flex flex-col">
+                            <FormLabel>Time</FormLabel>
                             <FormControl>
                                 <Input type="time" {...field} />
                             </FormControl>
