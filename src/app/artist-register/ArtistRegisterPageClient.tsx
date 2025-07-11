@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import { useArtists } from '@/hooks/useArtists';
-import { ARTIST_TYPES, ARTIST_CATEGORIES, DUMMY_LOCATIONS } from '@/lib/artists';
+import { ARTIST_TYPES, ARTIST_CATEGORIES } from '@/lib/artists';
 import { useToast } from '@/hooks/use-toast';
 
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,7 @@ const artistFormSchema = z.object({
   email: z.string().email("Invalid email address."),
   phone: z.string().min(10, "Phone number must be at least 10 digits."),
   address: z.string().min(5, "Address is required."),
-  location: z.string({ required_error: 'Location is required.' }),
+  location: z.string().min(2, "Location is required."),
   instagram: z.string().url().optional().or(z.literal('')),
   youtube: z.string().url().optional().or(z.literal('')),
   facebook: z.string().url().optional().or(z.literal('')),
@@ -55,6 +55,7 @@ export default function ArtistRegisterPageClient() {
       email: '',
       phone: '',
       address: '',
+      location: '',
       instagram: '',
       youtube: '',
       facebook: '',
@@ -189,15 +190,12 @@ export default function ArtistRegisterPageClient() {
                     </FormItem>
                   )}/>
                   <FormField control={form.control} name="location" render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Location</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Select your city..." /></SelectTrigger></FormControl>
-                            <SelectContent>{DUMMY_LOCATIONS.map(loc => <SelectItem key={loc} value={loc}>{loc}</SelectItem>)}</SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}/>
+                    <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl><Input placeholder="e.g., New York, USA" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                  )}/>
               </div>
 
               <div>
