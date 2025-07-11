@@ -30,21 +30,10 @@ export default function ArtistDashboardClient() {
         <div className="space-y-1">
           <h1 className="text-3xl font-headline flex items-center gap-2">
             Welcome, {currentArtist?.name || 'Artist'}! 👋
-            {currentArtist?.isVerified && <Award className="h-6 w-6 text-primary" title="Verified Artist" />}
           </h1>
           <p className="text-muted-foreground">Manage your events and grow your audience on CloudStage.</p>
         </div>
         <div className="flex items-center gap-4">
-          {!currentArtist?.isVerified && !currentArtist?.verificationRequest && (
-            <Button asChild variant="outline">
-              <Link href="/artist/verify">
-                <Award className="mr-2 h-4 w-4" /> Apply for Verified Badge
-              </Link>
-            </Button>
-          )}
-           {currentArtist?.verificationRequest?.status === 'Pending' && (
-              <Badge variant="secondary">Verification Pending</Badge>
-           )}
           <Button asChild>
             <Link href="/artist/event/create">
               <PlusCircle className="mr-2 h-4 w-4" /> Create New Event

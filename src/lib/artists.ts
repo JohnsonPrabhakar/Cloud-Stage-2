@@ -38,7 +38,6 @@ export const dummyArtists: Artist[] = [
         },
         bio: 'A passionate musician bringing soul to the world.',
         status: 'Approved',
-        isVerified: true,
     },
     {
         id: 'artist2',
@@ -55,7 +54,6 @@ export const dummyArtists: Artist[] = [
         },
         bio: 'A band that will rock your world.',
         status: 'Approved',
-        isVerified: false,
     },
      {
         id: 'artist3',

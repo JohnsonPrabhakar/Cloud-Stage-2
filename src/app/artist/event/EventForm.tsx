@@ -312,14 +312,8 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                         type="number" 
                         placeholder="e.g., 10" 
                         {...field}
-                        disabled={!currentArtist?.isVerified} 
                     />
                   </FormControl>
-                   {!currentArtist?.isVerified && (
-                    <FormDescription>
-                       Ticket pricing is available for verified artists only.
-                    </FormDescription>
-                   )}
                   <FormMessage />
                 </FormItem>
               )}
