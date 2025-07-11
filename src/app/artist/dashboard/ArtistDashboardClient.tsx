@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { PlusCircle, Edit, Share2, Award, Users, BarChart, ShieldCheck } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
+import { useTickets } from '@/hooks/useTickets';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
