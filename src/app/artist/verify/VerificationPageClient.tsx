@@ -15,6 +15,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const verificationFormSchema = z.object({
   youtubeUrl: z.string().url("A valid YouTube URL is required.").refine(url => url.includes('youtube.com') || url.includes('youtu.be'), "Must be a valid YouTube URL."),
@@ -26,13 +27,32 @@ const verificationFormSchema = z.object({
 
 type VerificationFormValues = z.infer<typeof verificationFormSchema>;
 
+function VerificationFormSkeleton() {
+    return (
+        <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+                <Skeleton className="h-8 w-3/4" />
+                <Skeleton className="h-4 w-full mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-8">
+                <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+                <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-20 w-full" /></div>
+                <div className="flex items-start space-x-3"><Skeleton className="h-6 w-6 rounded-sm" /><div className="space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-4 w-64" /></div></div>
+                <Skeleton className="h-10 w-36" />
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function VerificationPageClient() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const { artists, submitVerificationRequest } = useArtists();
   const { toast } = useToast();
 
-  const currentArtist = artists.find(a => a.email === user?.email);
+  const currentArtist = !isLoading && user ? artists.find(a => a.email === user.email) : undefined;
 
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationFormSchema),
@@ -73,8 +93,8 @@ export default function VerificationPageClient() {
     router.push('/artist/dashboard');
   }
 
-  if (!currentArtist) {
-    return <div>Loading artist data...</div>;
+  if (isLoading || !currentArtist) {
+    return <VerificationFormSkeleton />;
   }
   
   if (currentArtist.isVerified) {
