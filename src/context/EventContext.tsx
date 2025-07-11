@@ -8,6 +8,7 @@ interface EventContextType {
   events: Event[];
   updateEventStatus: (eventId: string, status: EventStatus) => void;
   addEvent: (event: Event) => void;
+  updateEvent: (event: Event) => void;
 }
 
 export const EventContext = createContext<EventContextType | undefined>(undefined);
@@ -53,9 +54,16 @@ export function EventProvider({ children }: { children: ReactNode }) {
     const updatedEvents = [event, ...events];
     updateEventsInStorage(updatedEvents);
   };
+  
+  const updateEvent = (updatedEventData: Event) => {
+    const updatedEvents = events.map(event =>
+      event.id === updatedEventData.id ? updatedEventData : event
+    );
+    updateEventsInStorage(updatedEvents);
+  };
 
   return (
-    <EventContext.Provider value={{ events, updateEventStatus, addEvent }}>
+    <EventContext.Provider value={{ events, updateEventStatus, addEvent, updateEvent }}>
       {children}
     </EventContext.Provider>
   );

@@ -13,7 +13,7 @@ function ArtistNav() {
             <h2 className="text-2xl font-headline mb-8">Artist Panel</h2>
             <ul className="space-y-2 flex-grow">
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/artist/dashboard"><Home/>Dashboard</Link></Button></li>
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/artist/create-event"><PlusCircle/>Create Event</Link></Button></li>
+                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/artist/event/create"><PlusCircle/>Create Event</Link></Button></li>
             </ul>
             <div className="mt-auto">
                  <Button variant="ghost" className="w-full justify-start gap-2" onClick={logout}><User/>Logout</Button>

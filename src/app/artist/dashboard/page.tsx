@@ -45,7 +45,7 @@ export default function ArtistDashboard() {
               <Badge variant="secondary">Verification Pending</Badge>
            )}
           <Button asChild>
-            <Link href="/artist/create-event">
+            <Link href="/artist/event/create">
               <PlusCircle className="mr-2 h-4 w-4" /> Create New Event
             </Link>
           </Button>
@@ -77,7 +77,11 @@ export default function ArtistDashboard() {
                         <div className="flex justify-between items-center w-full">
                         {event.isBoosted && <Badge variant="outline" className="text-accent border-accent">Boosted</Badge>}
                         <div className="flex gap-2 ml-auto">
-                            <Button variant="outline" size="icon"><Edit className="h-4 w-4"/></Button>
+                            <Button variant="outline" size="icon" asChild>
+                                <Link href={`/artist/event/${event.id}/edit`}>
+                                    <Edit className="h-4 w-4"/>
+                                </Link>
+                            </Button>
                             <Button variant="outline" size="icon"><Share2 className="h-4 w-4"/></Button>
                         </div>
                         </div>

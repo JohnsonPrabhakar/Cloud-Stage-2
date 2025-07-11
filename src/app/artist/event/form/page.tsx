@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -40,15 +40,17 @@ const eventFormSchema = z.object({
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
 
-export default function CreateEventPage() {
+export default function EventForm({ eventId }: { eventId?: string }) {
   const router = useRouter();
-  const { addEvent } = useEvents();
+  const { events, addEvent, updateEvent } = useEvents();
   const { user } = useAuth();
   const { artists } = useArtists();
   const { toast } = useToast();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
+  const isEditMode = !!eventId;
   const currentArtist = artists.find(a => a.email === user?.email);
   const isVerified = currentArtist?.isVerified;
 
@@ -64,6 +66,23 @@ export default function CreateEventPage() {
       ticketPrice: 0,
     },
   });
+
+  useEffect(() => {
+    if (isEditMode) {
+      const eventToEdit = events.find(e => e.id === eventId);
+      if (eventToEdit) {
+        form.reset({
+          ...eventToEdit,
+          date: new Date(eventToEdit.date),
+        });
+        const videoId = getYoutubeVideoId(eventToEdit.streamUrl);
+        if (videoId) {
+          setBannerUrl(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`);
+        }
+      }
+    }
+    setIsLoading(false);
+  }, [eventId, isEditMode, events, form]);
 
   const streamUrl = form.watch('streamUrl');
 
@@ -121,26 +140,49 @@ export default function CreateEventPage() {
     }
     
     const videoId = getYoutubeVideoId(data.streamUrl);
-    const newEvent = {
-      id: new Date().getTime().toString(),
-      ...data,
-      date: data.date.toISOString(),
-      artist: currentArtist.name,
-      artistEmail: user.email,
-      status: 'Pending' as const,
-      bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-    };
-    addEvent(newEvent);
-    toast({
-        title: "Event Created!",
-        description: "Your event has been submitted for approval.",
-    });
+    
+    if (isEditMode && eventId) {
+        const updatedEvent = {
+            id: eventId,
+            ...data,
+            date: data.date.toISOString(),
+            artist: currentArtist.name,
+            artistEmail: user.email,
+            status: 'Pending' as const, // Reset status on edit
+            bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        };
+        updateEvent(updatedEvent);
+        toast({
+            title: "Event Updated!",
+            description: "Your event has been resubmitted for approval.",
+        });
+    } else {
+        const newEvent = {
+            id: new Date().getTime().toString(),
+            ...data,
+            date: data.date.toISOString(),
+            artist: currentArtist.name,
+            artistEmail: user.email,
+            status: 'Pending' as const,
+            bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        };
+        addEvent(newEvent);
+        toast({
+            title: "Event Created!",
+            description: "Your event has been submitted for approval.",
+        });
+    }
+    
     router.push('/artist/dashboard');
+  }
+  
+  if (isLoading) {
+      return <div>Loading...</div>
   }
 
   return (
     <div>
-      <h1 className="text-3xl font-headline mb-6">Create New Event</h1>
+      <h1 className="text-3xl font-headline mb-6">{isEditMode ? 'Edit Event' : 'Create New Event'}</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -312,7 +354,7 @@ export default function CreateEventPage() {
             </div>
           </div>
           <Button type="submit" disabled={form.formState.isSubmitting}>
-             {form.formState.isSubmitting ? 'Submitting...' : 'Submit for Approval'}
+             {form.formState.isSubmitting ? 'Submitting...' : (isEditMode ? 'Update Event' : 'Submit for Approval')}
           </Button>
         </form>
       </Form>
