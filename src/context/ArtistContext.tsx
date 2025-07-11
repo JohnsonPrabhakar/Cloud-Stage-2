@@ -55,7 +55,7 @@ interface ArtistContextType {
   unfollowArtist: (artistId: string, userEmail: string) => void;
   
   verificationRequests: VerificationRequest[];
-  submitVerificationRequest: (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl'>) => void;
+  submitVerificationRequest: (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => void;
   approveVerification: (artistId: string) => void;
   rejectVerification: (artistId: string, reason: string) => void;
 }
@@ -104,7 +104,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
 
   // --- Verification Logic ---
 
-  const submitVerificationRequest = (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl'>) => {
+  const submitVerificationRequest = (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => {
       const artist = artists.find(a => a.id === artistId);
       if (!artist) return;
 

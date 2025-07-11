@@ -102,16 +102,16 @@ export default function VerificationPageClient() {
         return;
     }
 
-    // This is the CRITICAL FIX: create a mock URL and pass ONLY that.
-    // Do NOT pass `data` or `...data` which contains the full File object.
     const performanceVideoUrl = data.performanceVideo?.[0] ? `/uploads/mock-video.mp4` : '';
 
-    submitVerificationRequest(currentArtist.id, { 
+    const newRequestData = {
         workUrl1: data.workUrl1 || '',
         workUrl2: data.workUrl2 || '',
         reason: data.reason,
         performanceVideoUrl: performanceVideoUrl,
-    });
+    };
+    
+    submitVerificationRequest(currentArtist.id, newRequestData);
 
     toast({
         title: "Verification Request Submitted!",
