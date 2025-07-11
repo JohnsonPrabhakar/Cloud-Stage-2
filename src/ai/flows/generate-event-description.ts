@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {generate} from 'genkit/generate';
 
 const GenerateEventDescriptionInputSchema = z.object({
   streamUrl: z
@@ -48,13 +47,7 @@ const generateEventDescriptionFlow = ai.defineFlow(
     outputSchema: GenerateEventDescriptionOutputSchema,
   },
   async input => {
-    const {output} = await generate({
-        prompt: `You are an expert in creating engaging event descriptions. Based on the YouTube stream URL provided, generate a draft event description. Analyze the video title and any available metadata from the stream to create a compelling description that would attract viewers. YouTube Stream URL: ${input.streamUrl}`,
-        model: 'googleai/gemini-2.0-flash',
-        output: {
-            schema: GenerateEventDescriptionOutputSchema,
-        }
-    });
+    const {output} = await prompt(input);
     return output!;
   }
 );
