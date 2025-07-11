@@ -1,24 +1,68 @@
 'use client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, Video, User } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Home, PlusCircle, User, Menu } from 'lucide-react';
 
-function ArtistNav() {
+function ArtistHeader() {
     const { logout } = useAuth();
+    const [isSheetOpen, setSheetOpen] = useState(false);
+
+    const navLinks = [
+        { href: "/artist/dashboard", icon: <Home />, label: "Dashboard" },
+        { href: "/artist/event/create", icon: <PlusCircle />, label: "Create Event" },
+    ];
+
     return (
-        <nav className="flex flex-col h-full bg-muted/40 p-4">
-            <h2 className="text-2xl font-headline mb-8">Artist Panel</h2>
-            <ul className="space-y-2 flex-grow">
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/artist/dashboard"><Home/>Dashboard</Link></Button></li>
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/artist/event/create"><PlusCircle/>Create Event</Link></Button></li>
-            </ul>
-            <div className="mt-auto">
-                 <Button variant="ghost" className="w-full justify-start gap-2" onClick={logout}><User/>Logout</Button>
+        <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container flex h-14 items-center">
+                <div className="md:hidden">
+                     <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Menu className="h-5 w-5" />
+                                <span className="sr-only">Toggle Menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="pr-0">
+                             <div className="flex flex-col h-full">
+                                <Link href="/artist/dashboard" className="flex items-center" onClick={() => setSheetOpen(false)}>
+                                    <h2 className="text-2xl font-headline p-4">Artist Panel</h2>
+                                </Link>
+                                <nav className="flex flex-col gap-4 p-4">
+                                    {navLinks.map(link => (
+                                        <Button key={link.href} variant="ghost" className="w-full justify-start gap-2" asChild>
+                                            <Link href={link.href} onClick={() => setSheetOpen(false)}>
+                                                {link.icon}{link.label}
+                                            </Link>
+                                        </Button>
+                                    ))}
+                                </nav>
+                                <div className="mt-auto p-4">
+                                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => { logout(); setSheetOpen(false); }}>
+                                        <User />Logout
+                                    </Button>
+                                </div>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+                 <h1 className="text-xl font-bold font-headline hidden md:block">Artist Panel</h1>
+                <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-sm">
+                    {navLinks.map(link => (
+                         <Button key={link.href} variant="ghost" asChild>
+                            <Link href={link.href}>{link.label}</Link>
+                         </Button>
+                    ))}
+                </nav>
+                <div className="hidden md:flex items-center space-x-2 ml-auto">
+                    <Button variant="ghost" onClick={logout}><User className="mr-2"/>Logout</Button>
+                </div>
             </div>
-        </nav>
+        </header>
     );
 }
 
@@ -41,12 +85,12 @@ export default function ArtistLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 hidden md:block border-r">
-          <ArtistNav />
-      </aside>
+    <div className="flex flex-col min-h-screen">
+       <ArtistHeader />
       <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">
-        {children}
+        <div className="container mx-auto">
+            {children}
+        </div>
       </main>
     </div>
   );

@@ -1,29 +1,74 @@
 'use client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, BarChart2, User, Film, Users, BadgeCheck } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { LayoutDashboard, BarChart2, User, Film, Users, BadgeCheck, Menu, X } from 'lucide-react';
 
-function AdminNav() {
+function AdminHeader() {
     const { logout } = useAuth();
+    const [isSheetOpen, setSheetOpen] = useState(false);
+
+    const navLinks = [
+        { href: "/admin", icon: <LayoutDashboard />, label: "Events" },
+        { href: "/admin/artist-registrations", icon: <Users />, label: "Artist Registrations" },
+        { href: "/admin/verification-requests", icon: <BadgeCheck />, label: "Verification Requests" },
+        { href: "/admin/add-movie", icon: <Film />, label: "Add Movie" },
+        { href: "/admin/analytics", icon: <BarChart2 />, label: "Analytics" },
+    ];
+
     return (
-        <nav className="flex flex-col h-full bg-muted/40 p-4">
-            <h2 className="text-2xl font-headline mb-8">Admin Panel</h2>
-            <ul className="space-y-2 flex-grow">
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin"><LayoutDashboard/>Events</Link></Button></li>
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/artist-registrations"><Users/>Artist Registrations</Link></Button></li>
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/verification-requests"><BadgeCheck/>Verification Requests</Link></Button></li>
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/add-movie"><Film/>Add Movie</Link></Button></li>
-                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/analytics"><BarChart2/>Analytics</Link></Button></li>
-            </ul>
-            <div className="mt-auto">
-                 <Button variant="ghost" className="w-full justify-start gap-2" onClick={logout}><User/>Logout</Button>
+        <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container flex h-14 items-center">
+                <div className="md:hidden">
+                     <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <Menu className="h-5 w-5" />
+                                <span className="sr-only">Toggle Menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="pr-0">
+                             <div className="flex flex-col h-full">
+                                <Link href="/admin" className="flex items-center" onClick={() => setSheetOpen(false)}>
+                                    <h2 className="text-2xl font-headline p-4">Admin Panel</h2>
+                                </Link>
+                                <nav className="flex flex-col gap-4 p-4">
+                                    {navLinks.map(link => (
+                                        <Button key={link.href} variant="ghost" className="w-full justify-start gap-2" asChild>
+                                            <Link href={link.href} onClick={() => setSheetOpen(false)}>
+                                                {link.icon}{link.label}
+                                            </Link>
+                                        </Button>
+                                    ))}
+                                </nav>
+                                <div className="mt-auto p-4">
+                                    <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => { logout(); setSheetOpen(false); }}>
+                                        <User />Logout
+                                    </Button>
+                                </div>
+                            </div>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+                 <h1 className="text-xl font-bold font-headline hidden md:block">Admin Panel</h1>
+                <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-sm">
+                    {navLinks.map(link => (
+                         <Button key={link.href} variant="ghost" asChild>
+                            <Link href={link.href}>{link.label}</Link>
+                         </Button>
+                    ))}
+                </nav>
+                <div className="hidden md:flex items-center space-x-2 ml-auto">
+                    <Button variant="ghost" onClick={logout}><User className="mr-2"/>Logout</Button>
+                </div>
             </div>
-        </nav>
+        </header>
     );
 }
+
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -44,12 +89,12 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 hidden md:block border-r">
-          <AdminNav />
-      </aside>
+    <div className="flex flex-col min-h-screen">
+      <AdminHeader />
       <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">
-        {children}
+        <div className="container mx-auto">
+            {children}
+        </div>
       </main>
     </div>
   );
