@@ -1,4 +1,5 @@
 
+
 import { EVENT_CATEGORIES } from "./events";
 import { MOVIE_GENRES, MOVIE_LANGUAGES } from "./movies";
 import { ARTIST_CATEGORIES, ARTIST_TYPES } from "./artists";
@@ -23,6 +24,7 @@ export type Event = {
   duration: number; // in minutes
   ticketPrice: number; // in USD
   isBoosted?: boolean;
+  thumbsUp?: number;
 };
 
 export type UserRole = 'artist' | 'admin';

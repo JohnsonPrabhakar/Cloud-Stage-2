@@ -68,7 +68,7 @@ export default function ArtistAnalyticsPageClient() {
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell className="text-center text-muted-foreground h-24">
+                                            <TableCell colSpan={1} className="text-center text-muted-foreground h-24">
                                                 No followers yet.
                                             </TableCell>
                                         </TableRow>

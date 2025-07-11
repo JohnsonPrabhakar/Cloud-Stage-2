@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
@@ -9,6 +10,7 @@ interface EventContextType {
   updateEventStatus: (eventId: string, status: EventStatus) => void;
   addEvent: (event: Event) => void;
   updateEvent: (event: Event) => void;
+  giveThumbsUp: (eventId: string) => void;
 }
 
 export const EventContext = createContext<EventContextType | undefined>(undefined);
@@ -51,7 +53,8 @@ export function EventProvider({ children }: { children: ReactNode }) {
   };
 
   const addEvent = (event: Event) => {
-    const updatedEvents = [event, ...events];
+    const newEventWithThumbs = { ...event, thumbsUp: 0 };
+    const updatedEvents = [newEventWithThumbs, ...events];
     updateEventsInStorage(updatedEvents);
   };
   
@@ -61,9 +64,16 @@ export function EventProvider({ children }: { children: ReactNode }) {
     );
     updateEventsInStorage(updatedEvents);
   };
+  
+  const giveThumbsUp = (eventId: string) => {
+    const updatedEvents = events.map(event =>
+      event.id === eventId ? { ...event, thumbsUp: (event.thumbsUp || 0) + 1 } : event
+    );
+    updateEventsInStorage(updatedEvents);
+  };
 
   return (
-    <EventContext.Provider value={{ events, updateEventStatus, addEvent, updateEvent }}>
+    <EventContext.Provider value={{ events, updateEventStatus, addEvent, updateEvent, giveThumbsUp }}>
       {children}
     </EventContext.Provider>
   );
