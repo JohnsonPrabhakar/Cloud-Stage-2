@@ -7,18 +7,34 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { LayoutDashboard, BarChart2, User, Film, Users, Menu, ShieldCheck } from 'lucide-react';
+import { useArtists } from '@/hooks/useArtists';
+import { Badge } from '@/components/ui/badge';
 
 function AdminHeader() {
     const { logout } = useAuth();
     const [isSheetOpen, setSheetOpen] = useState(false);
+    const { artists, verificationRequests } = useArtists();
+
+    const pendingArtistCount = artists.filter(a => a.status === 'Pending').length;
+    const pendingVerificationCount = verificationRequests.filter(r => r.status === 'Pending').length;
 
     const navLinks = [
-        { href: "/admin", icon: <LayoutDashboard />, label: "Events" },
-        { href: "/admin/artist-registrations", icon: <Users />, label: "Artist Registrations" },
-        { href: "/admin/verification-requests", icon: <ShieldCheck />, label: "Verification Requests" },
-        { href: "/admin/add-movie", icon: <Film />, label: "Add Movie" },
-        { href: "/admin/analytics", icon: <BarChart2 />, label: "Analytics" },
+        { href: "/admin", icon: <LayoutDashboard />, label: "Events", count: 0 },
+        { href: "/admin/artist-registrations", icon: <Users />, label: "Artist Registrations", count: pendingArtistCount },
+        { href: "/admin/verification-requests", icon: <ShieldCheck />, label: "Verification Requests", count: pendingVerificationCount },
+        { href: "/admin/add-movie", icon: <Film />, label: "Add Movie", count: 0 },
+        { href: "/admin/analytics", icon: <BarChart2 />, label: "Analytics", count: 0 },
     ];
+
+    const renderNavLink = (link: { href: string; icon: React.ReactNode; label: string; count: number; }, isSheet: boolean = false) => (
+        <Button key={link.href} variant="ghost" className={cn("w-full justify-start gap-2", isSheet && "text-base")} asChild>
+            <Link href={link.href} onClick={() => setSheetOpen(false)}>
+                {link.icon}
+                <span className="flex-1">{link.label}</span>
+                {link.count > 0 && <Badge variant="destructive">{link.count}</Badge>}
+            </Link>
+        </Button>
+    );
 
     return (
         <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -39,14 +55,8 @@ function AdminHeader() {
                                 <Link href="/admin" className="flex items-center" onClick={() => setSheetOpen(false)}>
                                     <h2 className="text-2xl font-headline p-4">Admin Panel</h2>
                                 </Link>
-                                <nav className="flex flex-col gap-4 p-4">
-                                    {navLinks.map(link => (
-                                        <Button key={link.href} variant="ghost" className="w-full justify-start gap-2" asChild>
-                                            <Link href={link.href} onClick={() => setSheetOpen(false)}>
-                                                {link.icon}{link.label}
-                                            </Link>
-                                        </Button>
-                                    ))}
+                                <nav className="flex flex-col gap-2 p-4">
+                                    {navLinks.map(link => renderNavLink(link, true))}
                                 </nav>
                                 <div className="mt-auto p-4">
                                     <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => { logout(); setSheetOpen(false); }}>
@@ -58,10 +68,13 @@ function AdminHeader() {
                     </Sheet>
                 </div>
                  <h1 className="text-xl font-bold font-headline hidden md:block">Admin Panel</h1>
-                <nav className="hidden md:flex flex-1 items-center justify-center gap-6 text-sm">
+                <nav className="hidden md:flex flex-1 items-center justify-center gap-2 text-sm">
                     {navLinks.map(link => (
                          <Button key={link.href} variant="ghost" asChild>
-                            <Link href={link.href}>{link.label}</Link>
+                            <Link href={link.href} className="flex items-center gap-2">
+                                {link.label}
+                                {link.count > 0 && <Badge variant="destructive">{link.count}</Badge>}
+                            </Link>
                          </Button>
                     ))}
                 </nav>
