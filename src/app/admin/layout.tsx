@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, BarChart2, User } from 'lucide-react';
+import { LayoutDashboard, BarChart2, User, Film } from 'lucide-react';
 
 function AdminNav() {
     const { logout } = useAuth();
@@ -13,6 +13,7 @@ function AdminNav() {
             <h2 className="text-2xl font-headline mb-8">Admin Panel</h2>
             <ul className="space-y-2 flex-grow">
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin"><LayoutDashboard/>Events</Link></Button></li>
+                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/add-movie"><Film/>Add Movie</Link></Button></li>
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/analytics"><BarChart2/>Analytics</Link></Button></li>
             </ul>
             <div className="mt-auto">

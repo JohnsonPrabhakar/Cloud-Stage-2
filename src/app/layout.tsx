@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 import { EventProvider } from '@/context/EventContext';
 import { TicketProvider } from '@/context/TicketContext';
+import { MovieProvider } from '@/context/MovieContext';
 import { cn } from '@/lib/utils';
 
 export default function RootLayout({
@@ -22,10 +23,12 @@ export default function RootLayout({
       <body className={cn("min-h-screen bg-background font-sans antialiased", "gradient-background")}>
         <AuthProvider>
           <EventProvider>
-            <TicketProvider>
-                {children}
-                <Toaster />
-            </TicketProvider>
+            <MovieProvider>
+                <TicketProvider>
+                    {children}
+                    <Toaster />
+                </TicketProvider>
+            </MovieProvider>
           </EventProvider>
         </AuthProvider>
       </body>
