@@ -2,7 +2,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEvents } from '@/hooks/useEvents';
 import Header from '@/components/layout/Header';
@@ -26,14 +25,6 @@ export default function Home() {
       <Header />
       <main className="flex-1">
         <section className="relative w-full h-[60vh] md:h-[80vh] flex items-center justify-center text-center text-white overflow-hidden">
-            <Image
-                src="https://placehold.co/1920x1080.png"
-                alt="Hero Background"
-                fill
-                className="absolute inset-0 w-full h-full object-cover -z-10"
-                data-ai-hint="concert crowd"
-                priority
-            />
             <div className="absolute inset-0 bg-black/60 -z-10" />
             <div className="container px-4 md:px-6 z-10">
                 <div className="max-w-3xl mx-auto">
