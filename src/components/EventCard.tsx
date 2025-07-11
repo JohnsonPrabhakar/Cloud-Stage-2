@@ -79,7 +79,7 @@ export function EventCard({ event, children }: { event: Event; children?: React.
                             <Link href={`/movies/${event.id}`}>Watch Now</Link>
                         </Button>
                     ) : (
-                        <Button asChild className="w-full bg-accent hover:bg-accent/90">
+                        <Button asChild className="w-full">
                             <Link href={`/movies/${event.id}/purchase`}>
                                 <Ticket className="mr-2 h-4 w-4" />
                                 {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}

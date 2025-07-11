@@ -75,7 +75,7 @@ export default function EventDetailPage() {
                 <CardTitle className="text-3xl md:text-4xl font-headline">{event.title}</CardTitle>
               </div>
               {!canWatch && (
-                <Button onClick={() => router.push(`/movies/${event.id}/purchase`)} className="bg-accent hover:bg-accent/90">
+                <Button onClick={() => router.push(`/movies/${event.id}/purchase`)}>
                   <Ticket className="mr-2"/>
                   {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
                 </Button>

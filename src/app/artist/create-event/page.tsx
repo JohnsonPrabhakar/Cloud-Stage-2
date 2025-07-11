@@ -295,7 +295,7 @@ export default function CreateEventPage() {
                 </div>
             </div>
           </div>
-          <Button type="submit" disabled={form.formState.isSubmitting} className="bg-accent hover:bg-accent/90">
+          <Button type="submit" disabled={form.formState.isSubmitting}>
              {form.formState.isSubmitting ? 'Submitting...' : 'Submit for Approval'}
           </Button>
         </form>
