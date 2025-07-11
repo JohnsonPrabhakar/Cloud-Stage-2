@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { useTickets } from '@/hooks/useTickets';
 import { useToast } from '@/hooks/use-toast';
+import { useEvents } from '@/hooks/useEvents';
 import type { Event } from '@/lib/types';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,11 +14,31 @@ import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { Ticket, Calendar, Clock, Mic, ArrowLeft } from 'lucide-react';
 
-export default function PurchasePageClient({ event }: { event: Event }) {
+export default function PurchasePageClient({ eventId }: { eventId: string }) {
   const { user, isLoading } = useAuth();
   const { purchaseTicket } = useTickets();
   const { toast } = useToast();
   const router = useRouter();
+  const { events } = useEvents();
+
+  const event = events.find(e => e.id === eventId);
+
+  if (!event) {
+     return (
+        <main className="container py-8 md:py-12 px-4 md:px-6">
+          <Card className="max-w-md mx-auto">
+            <CardHeader>
+              <CardTitle>Event Not Found</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>The event you are looking for does not exist or has been moved.</p>
+              <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+            </CardContent>
+          </Card>
+        </main>
+    );
+  }
+
 
   const handlePurchase = () => {
     if (!user) {
