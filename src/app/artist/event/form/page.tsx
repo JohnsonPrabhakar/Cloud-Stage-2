@@ -160,7 +160,6 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 status: 'Pending' as const,
                 bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             };
-            console.log("Updating event with data:", updatedEvent);
             updateEvent(updatedEvent);
             toast({
                 title: "Event updated successfully",
@@ -298,7 +297,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <FormItem>
+                     <FormItem>
                         <FormLabel>Date & Time</FormLabel>
                          <div className="flex gap-2">
                             <FormField
