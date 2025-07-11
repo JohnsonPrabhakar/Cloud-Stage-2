@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTickets } from '@/hooks/useTickets';
 import { useToast } from '@/hooks/use-toast';
 import { useEvents } from '@/hooks/useEvents';
-import type { Event } from '@/lib/types';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
