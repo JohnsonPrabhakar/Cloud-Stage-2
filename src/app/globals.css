@@ -16,25 +16,25 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
   :root {
-    --background: 60 56% 91%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 0 55% 30%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 60 30% 85%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 60 30% 85%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 60 56% 91%;
-    --accent-foreground: 0 55% 30%;
+    --background: 0 55% 30%;
+    --foreground: 0 0% 98%;
+    --card: 0 55% 25%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 55% 20%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 60 56% 91%;
+    --primary-foreground: 0 55% 30%;
+    --secondary: 0 55% 40%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 55% 40%;
+    --muted-foreground: 0 0% 80%;
+    --accent: 0 55% 45%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 60 20% 80%;
-    --input: 0 0% 100%;
-    --ring: 0 55% 30%;
+    --border: 0 55% 40%;
+    --input: 0 55% 45%;
+    --ring: 60 56% 91%;
     --radius: 0.5rem;
   }
  
@@ -69,3 +69,4 @@ h1, h2, h3, h4, h5, h6 {
     @apply bg-background text-foreground;
   }
 }
+
