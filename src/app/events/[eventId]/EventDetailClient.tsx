@@ -56,7 +56,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   const hasPurchasedTicket = hasTicket(eventId, user?.email);
   
   const artist = artists.find(a => a.email === event.artistEmail);
-  const isFollowing = user && artist?.followers?.includes(user.email);
+  const isFollowing = !!user && !!artist && artist.followers.includes(user.email);
 
   const handleFollow = () => {
       if (!user) {
