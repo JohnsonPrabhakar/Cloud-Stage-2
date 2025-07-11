@@ -1,21 +1,26 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEvents } from '@/hooks/useEvents';
+import { useTickets } from '@/hooks/useTickets';
 import { getYoutubeVideoId } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Mic, Tag } from 'lucide-react';
+import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import Header from '@/components/layout/Header';
 
 export default function EventDetailPage() {
   const { events } = useEvents();
+  const { hasTicket } = useTickets();
   const params = useParams();
+  const router = useRouter();
   const eventId = params.eventId as string;
 
   const event = events.find(e => e.id === eventId);
+  const hasPurchasedTicket = hasTicket(eventId);
 
   if (!event) {
     return (
@@ -29,7 +34,8 @@ export default function EventDetailPage() {
   }
 
   const videoId = getYoutubeVideoId(event.streamUrl);
-  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
+  const canWatch = hasPurchasedTicket || event.ticketPrice === 0;
 
   return (
     <>
@@ -38,18 +44,43 @@ export default function EventDetailPage() {
       <div className="max-w-4xl mx-auto">
         <Card className="overflow-hidden">
           <CardHeader className="p-0">
-            <Image
-              src={event.bannerUrl}
-              alt={event.title}
-              width={1250}
-              height={700}
-              className="w-full aspect-video object-cover"
-              data-ai-hint="event hero"
-            />
+             {!canWatch && (
+              <Image
+                src={event.bannerUrl}
+                alt={event.title}
+                width={1250}
+                height={700}
+                className="w-full aspect-video object-cover"
+                data-ai-hint="event hero"
+              />
+            )}
+             {canWatch && embedUrl && (
+                <div className="aspect-video">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={embedUrl}
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="rounded-lg"
+                  ></iframe>
+                </div>
+              )}
           </CardHeader>
           <CardContent className="p-6">
-            <Badge variant="secondary" className="mb-4">{event.category}</Badge>
-            <CardTitle className="text-3xl md:text-4xl font-headline">{event.title}</CardTitle>
+            <div className="flex justify-between items-start">
+              <div>
+                <Badge variant="secondary" className="mb-4">{event.category}</Badge>
+                <CardTitle className="text-3xl md:text-4xl font-headline">{event.title}</CardTitle>
+              </div>
+              {!canWatch && (
+                <Button onClick={() => router.push(`/movies/${event.id}/purchase`)} className="bg-accent hover:bg-accent/90">
+                  <Ticket className="mr-2"/>
+                  {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
+                </Button>
+              )}
+            </div>
             
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground my-4">
                 <div className="flex items-center gap-2">
@@ -74,27 +105,14 @@ export default function EventDetailPage() {
               <p>{event.description}</p>
             </div>
             
-            <div className="mt-8">
-              <h3 className="text-2xl font-headline mb-4">Watch The Event</h3>
-              {embedUrl ? (
-                <div className="aspect-video">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={embedUrl}
-                    title="YouTube video player"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="rounded-lg"
-                  ></iframe>
-                </div>
-              ) : (
-                <p className="text-muted-foreground">Stream URL is not a valid YouTube link.</p>
-              )}
-               <p className="text-sm text-muted-foreground mt-2 font-code">
-                Stream URL: <a href={event.streamUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">{event.streamUrl}</a>
-               </p>
-            </div>
+            {canWatch && !embedUrl && (
+              <div className="mt-8 p-4 bg-destructive/10 rounded-lg text-destructive">
+                <p>Stream URL is not a valid YouTube link.</p>
+                 <p className="text-sm text-muted-foreground mt-2 font-code">
+                    Stream URL: <a href={event.streamUrl} target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">{event.streamUrl}</a>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

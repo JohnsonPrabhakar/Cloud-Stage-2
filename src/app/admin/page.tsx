@@ -15,9 +15,7 @@ export default function AdminPage() {
   const rejectedEvents = events.filter(e => e.status === 'Rejected');
 
   const handleApprove = (eventId: string) => {
-    const eventDate = new Date(events.find(e => e.id === eventId)?.date || '');
-    const status = eventDate > new Date() ? 'Upcoming' : 'Past';
-    updateEventStatus(eventId, status);
+    updateEventStatus(eventId, 'Approved');
     toast({ title: 'Event Approved!' });
   };
 

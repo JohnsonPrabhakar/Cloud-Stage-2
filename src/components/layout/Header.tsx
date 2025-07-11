@@ -5,13 +5,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Ticket } from 'lucide-react';
+import { useTickets } from '@/hooks/useTickets';
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { purchasedTickets } = useTickets();
 
   const navLinks = [
     { href: '/', label: 'Home' },
-    { href: '/movies', label: 'Movies' },
+    { href: '/movies', label: 'All Events' },
   ];
 
   return (
@@ -32,6 +34,11 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+             {purchasedTickets.length > 0 && (
+                 <Link href="/my-tickets" className="text-foreground/60 transition-colors hover:text-foreground/80">
+                    My Tickets
+                </Link>
+             )}
           </nav>
         </div>
 
@@ -69,6 +76,9 @@ export default function Header() {
                                 {link.label}
                             </Link>
                         ))}
+                        {purchasedTickets.length > 0 && (
+                            <Link href="/my-tickets" className="text-lg">My Tickets</Link>
+                        )}
                         <hr/>
                         {user ? (
                         <>

@@ -5,7 +5,9 @@ import { cn } from '@/lib/utils';
 import type { Event, EventCategory } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Music, Mic, Wand2, Leaf, MessageSquare, Wrench, Sparkles, Tag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Calendar, Music, Mic, Wand2, Leaf, MessageSquare, Wrench, Sparkles, Tag, Ticket } from 'lucide-react';
+import { useTickets } from '@/hooks/useTickets';
 
 const categoryIcons: Record<EventCategory, React.ElementType> = {
   "Music": Music,
@@ -28,6 +30,11 @@ const statusColors = {
 
 export function EventCard({ event, children }: { event: Event; children?: React.ReactNode }) {
   const Icon = categoryIcons[event.category] || Tag;
+  const { hasTicket } = useTickets();
+  const hasPurchased = hasTicket(event.id);
+
+  const isViewable = event.status === 'Live' || event.status === 'Upcoming' || event.status === 'Past' || event.status === 'Approved';
+
 
   return (
     <Card className="w-full flex flex-col h-full overflow-hidden transition-all hover:shadow-lg">
@@ -62,11 +69,27 @@ export function EventCard({ event, children }: { event: Event; children?: React.
           </div>
         </div>
       </CardContent>
-      {children && (
-        <CardFooter className="p-4 pt-0">
-          {children}
-        </CardFooter>
-      )}
+      
+      <CardFooter className="p-4 pt-0">
+        {children ? children : (
+            <>
+                {isViewable && (
+                    hasPurchased ? (
+                        <Button asChild className="w-full">
+                            <Link href={`/movies/${event.id}`}>Watch Now</Link>
+                        </Button>
+                    ) : (
+                        <Button asChild className="w-full bg-accent hover:bg-accent/90">
+                            <Link href={`/movies/${event.id}/purchase`}>
+                                <Ticket className="mr-2 h-4 w-4" />
+                                {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
+                            </Link>
+                        </Button>
+                    )
+                )}
+            </>
+        )}
+      </CardFooter>
     </Card>
   );
 }

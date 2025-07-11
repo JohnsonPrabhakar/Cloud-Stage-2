@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 import { EventProvider } from '@/context/EventContext';
+import { TicketProvider } from '@/context/TicketContext';
 
 export default function RootLayout({
   children,
@@ -20,8 +21,10 @@ export default function RootLayout({
       <body className="min-h-screen bg-background font-sans antialiased">
         <AuthProvider>
           <EventProvider>
-            {children}
-            <Toaster />
+            <TicketProvider>
+                {children}
+                <Toaster />
+            </TicketProvider>
           </EventProvider>
         </AuthProvider>
       </body>

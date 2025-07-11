@@ -24,18 +24,22 @@ export default function Home() {
     return ['All', ...Array.from(new Set(allLanguages))];
   }, [events]);
 
+  const approvedEvents = useMemo(() => {
+    return events.filter(e => e.status === 'Live' || e.status === 'Upcoming' || e.status === 'Past' || e.status === 'Approved');
+  }, [events]);
+
   const filteredEvents = useMemo(() => {
-    return events.filter(event => {
+    return approvedEvents.filter(event => {
       const matchesCategory = selectedCategory === 'All' || event.category === selectedCategory;
       const matchesLanguage = selectedLanguage === 'All' || event.language === selectedLanguage;
       const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch && matchesLanguage;
     });
-  }, [events, searchTerm, selectedCategory, selectedLanguage]);
+  }, [approvedEvents, searchTerm, selectedCategory, selectedLanguage]);
 
   const now = new Date();
-  const liveEvents = filteredEvents.filter(e => new Date(e.date) <= now && e.status === 'Live');
-  const upcomingEvents = filteredEvents.filter(e => new Date(e.date) > now && e.status === 'Upcoming');
+  const liveEvents = filteredEvents.filter(e => new Date(e.date) <= now && (e.status === 'Live' || e.status === 'Approved'));
+  const upcomingEvents = filteredEvents.filter(e => new Date(e.date) > now && (e.status === 'Upcoming' || e.status === 'Approved'));
   const pastEvents = filteredEvents.filter(e => new Date(e.date) <= now && e.status === 'Past');
 
   return (

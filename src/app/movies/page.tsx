@@ -15,7 +15,7 @@ export default function MoviesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const approvedEvents = useMemo(() => {
-    return events.filter(e => e.status === 'Live' || e.status === 'Upcoming' || e.status === 'Past');
+    return events.filter(e => e.status === 'Live' || e.status === 'Upcoming' || e.status === 'Past' || e.status === 'Approved');
   }, [events]);
 
   const filteredEvents = useMemo(() => {

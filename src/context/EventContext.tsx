@@ -16,18 +16,24 @@ export function EventProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
-    try {
-      const storedEvents = localStorage.getItem('events');
-      if (storedEvents) {
-        setEvents(JSON.parse(storedEvents));
-      } else {
-        localStorage.setItem('events', JSON.stringify(dummyEvents));
+    const storedEvents = localStorage.getItem('events');
+    if (storedEvents) {
+        try {
+            const parsedEvents = JSON.parse(storedEvents);
+            if(Array.isArray(parsedEvents) && parsedEvents.length > 0){
+                setEvents(parsedEvents);
+            } else {
+                 setEvents(dummyEvents);
+                 localStorage.setItem('events', JSON.stringify(dummyEvents));
+            }
+        } catch (error) {
+            console.error("Failed to parse events from localStorage, using dummy data.", error);
+            setEvents(dummyEvents);
+            localStorage.setItem('events', JSON.stringify(dummyEvents));
+        }
+    } else {
         setEvents(dummyEvents);
-      }
-    } catch (error) {
-      console.error("Failed to parse events from localStorage", error);
-      localStorage.setItem('events', JSON.stringify(dummyEvents)); 
-      setEvents(dummyEvents);
+        localStorage.setItem('events', JSON.stringify(dummyEvents));
     }
   }, []);
 
