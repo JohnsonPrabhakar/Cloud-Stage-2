@@ -14,20 +14,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ShieldCheck, Clock } from 'lucide-react';
 
 const verificationFormSchema = z.object({
-  workUrl1: z.string().url("Please enter a valid YouTube URL."),
-  workUrl2: z.string().url("Please enter a valid Instagram or Facebook URL."),
-  performanceVideo: z.any().refine(files => files?.length > 0, "A performance video is required."),
+  workUrl1: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
+  workUrl2: z.string().url("Please enter a valid URL.").optional().or(z.literal('')),
+  performanceVideo: z.any().optional(),
   reason: z.string().min(20, "Please provide a reason of at least 20 characters."),
   agreedToTerms: z.boolean().refine(val => val === true, {
     message: "You must agree to the terms and conditions.",
   }),
+}).refine(data => !!data.workUrl1 || !!data.workUrl2 || (data.performanceVideo && data.performanceVideo.length > 0), {
+    message: "Please provide at least one link or upload a performance video.",
+    path: ["workUrl1"], 
 });
 
 type VerificationFormValues = z.infer<typeof verificationFormSchema>;
@@ -94,18 +97,35 @@ export default function VerificationPageClient() {
   const existingRequest = verificationRequests.find(req => req.artistId === currentArtist?.id);
 
   function onSubmit(data: VerificationFormValues) {
-    const file = data.performanceVideo[0];
-    const reader = new FileReader();
-    reader.onloadend = () => {
-        const videoDataUrl = reader.result as string;
-        submitVerificationRequest(currentArtist.id, { ...data, performanceVideoUrl: videoDataUrl });
+    if (!currentArtist) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not find artist profile.' });
+        return;
+    }
+
+    const processAndSubmit = (videoDataUrl = '') => {
+        submitVerificationRequest(currentArtist.id, { 
+            workUrl1: data.workUrl1 || '',
+            workUrl2: data.workUrl2 || '',
+            reason: data.reason,
+            performanceVideoUrl: videoDataUrl,
+        });
         toast({
             title: "Verification Request Submitted!",
             description: "Your application is under review. We'll notify you soon.",
         });
         router.push('/artist/dashboard');
-    };
-    reader.readAsDataURL(file);
+    }
+
+    const file = data.performanceVideo?.[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            processAndSubmit(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+    } else {
+        processAndSubmit();
+    }
   }
 
   if (isAuthLoading || artists.length === 0) {
@@ -148,12 +168,18 @@ export default function VerificationPageClient() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div>
+              <FormLabel>Proof of Work</FormLabel>
+              <FormDescription>Please provide at least one link OR upload a performance video.</FormDescription>
+              {form.formState.errors.workUrl1 && <FormMessage>{form.formState.errors.workUrl1.message}</FormMessage>}
+            </div>
+
             <FormField
               control={form.control}
               name="workUrl1"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>YouTube Link</FormLabel>
+                  <FormLabel>YouTube Link (Optional)</FormLabel>
                   <FormControl><Input placeholder="https://youtube.com/watch?v=..." {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -164,7 +190,7 @@ export default function VerificationPageClient() {
               name="workUrl2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Instagram or Facebook Profile Link</FormLabel>
+                  <FormLabel>Instagram or Facebook Profile Link (Optional)</FormLabel>
                   <FormControl><Input placeholder="https://instagram.com/yourprofile" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -173,14 +199,15 @@ export default function VerificationPageClient() {
             <FormField
               control={form.control}
               name="performanceVideo"
-              render={({ field }) => (
+              render={({ field: { onChange, ...fieldProps } }) => (
                 <FormItem>
-                  <FormLabel>Upload Performance Video</FormLabel>
+                  <FormLabel>Upload Performance Video (Optional)</FormLabel>
                   <FormControl>
                     <Input 
                         type="file" 
-                        accept="video/*" 
-                        onChange={(e) => field.onChange(e.target.files)}
+                        accept="video/*"
+                        {...fieldProps}
+                        onChange={(e) => onChange(e.target.files)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -214,6 +241,7 @@ export default function VerificationPageClient() {
                       I agree to the CloudStage terms and conditions and meet the minimum standards and policy.
                     </FormLabel>
                   </div>
+                   <FormMessage />
                 </FormItem>
               )}
             />
@@ -226,3 +254,4 @@ export default function VerificationPageClient() {
     </Card>
   );
 }
+

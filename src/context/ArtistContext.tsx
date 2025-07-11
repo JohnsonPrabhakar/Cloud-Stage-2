@@ -13,7 +13,7 @@ interface ArtistContextType {
   followArtist: (artistId: string, userEmail: string) => void;
   unfollowArtist: (artistId: string, userEmail: string) => void;
   verificationRequests: VerificationRequest[];
-  submitVerificationRequest: (artistId: string, data: Omit<VerificationRequest, 'id' | 'artistId' | 'status' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' >) => void;
+  submitVerificationRequest: (artistId: string, data: Omit<VerificationRequest, 'id' | 'artistId' | 'status' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'agreedToTerms' >) => void;
   approveVerification: (artistId: string) => void;
   rejectVerification: (artistId: string, reason: string) => void;
 }
