@@ -59,11 +59,11 @@ function Logo() {
 export default function LoginPageClient() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const { loginAdminOrArtist } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login(email, password);
+    loginAdminOrArtist(email, password);
   };
 
   return (

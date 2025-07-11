@@ -11,7 +11,8 @@ import { useUsers } from '@/context/UserContext';
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, pass: string) => void;
+  loginAdminOrArtist: (email: string, pass: string) => void;
+  loginUser: (email: string, pass: string) => void;
   registerUser: (name: string, email: string, phone: string, pass: string) => void;
   logout: () => void;
   isLoading: boolean;
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, pass: string) => {
+  const loginAdminOrArtist = (email: string, pass: string) => {
     // Check for admin
     if (email === 'admin@cloudstage.live' && pass === 'PASSWORD') {
       const loggedInUser: User = { email, role: 'admin' };
@@ -61,7 +62,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
     }
 
-    // Check for regular users
+    toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+    });
+  };
+
+  const loginUser = (email: string, pass: string) => {
     const registeredUser = users.find(u => u.email === email);
     if(registeredUser && registeredUser.password === pass) {
         const loggedInUser: User = { 
@@ -83,13 +91,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
     }
 
-
     toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Invalid credentials. Please try again.",
+        description: "Invalid user credentials. Please check your email and password.",
     });
   };
+
 
   const registerUser = (name: string, email: string, phone: string, pass: string) => {
       const existingUser = users.find(u => u.email === email);
@@ -140,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, registerUser, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, loginAdminOrArtist, loginUser, registerUser, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

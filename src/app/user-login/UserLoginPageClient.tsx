@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -47,13 +48,13 @@ function Logo() {
 }
 
 export default function UserLoginPageClient() {
-  const { login, registerUser } = useAuth();
+  const { loginUser, registerUser } = useAuth();
   
   const loginForm = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: ''}});
   const registerForm = useForm<RegisterValues>({ resolver: zodResolver(registerSchema), defaultValues: { name: '', email: '', phone: '', password: ''}});
 
   const onLoginSubmit: SubmitHandler<LoginValues> = (data) => {
-    login(data.email, data.password);
+    loginUser(data.email, data.password);
   };
   
   const onRegisterSubmit: SubmitHandler<RegisterValues> = (data) => {
