@@ -2,128 +2,175 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
 import { useArtists } from '@/hooks/useArtists';
+import { useEvents } from '@/hooks/useEvents';
 import { useTickets } from '@/hooks/useTickets';
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users } from 'lucide-react';
-import type { Artist } from '@/lib/types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
+import { Users, Ticket, DollarSign, BarChart2 } from 'lucide-react';
+import type { Event } from '@/lib/types';
 
 const formatCurrency = (value: number) => `$${value.toLocaleString()}`;
 const formatNumber = (value: number) => value.toLocaleString();
 
 export default function ArtistAnalyticsPageClient() {
-    const { events } = useEvents();
-    const { user } = useAuth();
-    const { artists } = useArtists();
-    const { purchasedTickets } = useTickets();
+  const { user } = useAuth();
+  const { artists } = useArtists();
+  const { events } = useEvents();
+  const { purchasedTickets } = useTickets();
 
-    const currentArtist = artists.find((a: Artist) => a.email === user?.email);
+  const currentArtist = useMemo(() => {
+    if (!user) return null;
+    return artists.find(a => a.email === user.email);
+  }, [user, artists]);
+  
+  const analyticsData = useMemo(() => {
+    if (!currentArtist) return null;
 
-    const analyticsData = useMemo(() => {
-        if (!currentArtist) return [];
-        
-        const artistEvents = events.filter(e => e.artistEmail === currentArtist.email);
-        
-        return artistEvents.map(event => {
-            const ticketsForEvent = purchasedTickets.filter(t => t.eventId === event.id);
-            const revenue = ticketsForEvent.length * event.ticketPrice;
-            return {
-                id: event.id,
-                title: event.title,
-                ticketsSold: ticketsForEvent.length,
-                revenue: revenue,
-                attendees: ticketsForEvent.length,
-            };
-        });
-    }, [currentArtist, events, purchasedTickets]);
+    const artistEvents = events.filter(e => e.artistEmail === currentArtist.email);
+    
+    const artistTickets = purchasedTickets.filter(ticket => 
+        artistEvents.some(event => event.id === ticket.eventId)
+    );
 
-    if (!currentArtist) {
-        return (
-            <div className="flex h-[60vh] items-center justify-center">
-                <p>Loading analytics...</p>
-            </div>
-        );
-    }
+    const totalTicketsSold = artistTickets.length;
+    
+    const totalRevenue = artistEvents.reduce((acc, event) => {
+        const ticketsForEvent = artistTickets.filter(t => t.eventId === event.id);
+        return acc + (ticketsForEvent.length * event.ticketPrice);
+    }, 0);
 
+    const eventPerformance = artistEvents.map(event => {
+        const ticketsSold = artistTickets.filter(t => t.eventId === event.id).length;
+        return {
+            name: event.title.length > 20 ? `${event.title.substring(0, 20)}...` : event.title,
+            ticketsSold,
+            revenue: ticketsSold * event.ticketPrice,
+        };
+    }).sort((a, b) => b.revenue - a.revenue);
+
+    return {
+      totalEvents: artistEvents.length,
+      totalFollowers: currentArtist.followers.length,
+      totalTicketsSold,
+      totalRevenue,
+      eventPerformance,
+    };
+  }, [currentArtist, events, purchasedTickets]);
+
+  if (!currentArtist) {
     return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-headline mb-6">My Analytics</h1>
+      <div className="flex h-[50vh] items-center justify-center">
+        <p>Loading artist data...</p>
+      </div>
+    );
+  }
+  
+  if (!analyticsData) {
+     return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <p>Calculating analytics...</p>
+      </div>
+    );
+  }
 
+  return (
+    <div className="space-y-8">
+        <h1 className="text-3xl font-headline">Your Analytics</h1>
+        
+        {/* Key Metrics */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Users /> Follower Insights</CardTitle>
-                    <CardDescription>An overview of your audience.</CardDescription>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Followers</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-1 flex flex-col items-center justify-center bg-muted p-6 rounded-lg">
-                        <p className="text-lg text-muted-foreground">Total Followers</p>
-                        <p className="text-6xl font-bold">{currentArtist.followers.length}</p>
-                    </div>
-                    <div className="md:col-span-2">
-                         <h3 className="font-semibold mb-2 text-muted-foreground">Followers List</h3>
-                         <div className="h-48 overflow-y-auto border rounded-md">
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Email</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {currentArtist.followers.length > 0 ? (
-                                        currentArtist.followers.map((followerEmail, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{followerEmail}</TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={1} className="text-center text-muted-foreground h-24">
-                                                No followers yet.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                         </div>
-                    </div>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(analyticsData.totalFollowers)}</div>
                 </CardContent>
             </Card>
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>Event Performance</CardTitle>
-                    <CardDescription>A breakdown of your event sales and revenue.</CardDescription>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Tickets Sold</CardTitle>
+                    <Ticket className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="pt-6">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Event</TableHead>
-                                <TableHead className="text-center">Tickets Sold</TableHead>
-                                <TableHead className="text-center">Attendees</TableHead>
-                                <TableHead className="text-right">Total Revenue</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {analyticsData.length > 0 ? analyticsData.map(data => (
-                                <TableRow key={data.id}>
-                                    <TableCell>{data.title}</TableCell>
-                                    <TableCell className="text-center">{formatNumber(data.ticketsSold)}</TableCell>
-                                    <TableCell className="text-center">{formatNumber(data.attendees)}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(data.revenue)}</TableCell>
-                                </TableRow>
-                            )) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} className="text-center text-muted-foreground h-24">No event data to display.</TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(analyticsData.totalTicketsSold)}</div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(analyticsData.totalRevenue)}</div>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+                    <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{formatNumber(analyticsData.totalEvents)}</div>
                 </CardContent>
             </Card>
         </div>
-    );
+
+        {/* Charts */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="lg:col-span-4">
+                <CardHeader>
+                    <CardTitle>Event Performance</CardTitle>
+                    <CardDescription>Tickets sold per event.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                     <ResponsiveContainer width="100%" height={350}>
+                        <BarChart data={analyticsData.eventPerformance}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} interval={0} />
+                            <YAxis />
+                            <Tooltip
+                                contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+                                labelStyle={{ color: 'hsl(var(--foreground))' }}
+                            />
+                            <Legend />
+                            <Bar dataKey="ticketsSold" fill="hsl(var(--primary))" name="Tickets Sold" />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+            <Card className="lg:col-span-3">
+                <CardHeader>
+                    <CardTitle>Followers</CardTitle>
+                    <CardDescription>A list of your followers.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[350px] overflow-y-auto">
+                    {currentArtist.followers.length > 0 ? (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Email</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {currentArtist.followers.map((email, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{email}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : (
+                        <p className="text-muted-foreground text-center pt-8">You don't have any followers yet.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+    </div>
+  );
 }
