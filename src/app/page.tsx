@@ -36,9 +36,10 @@ export default function Home() {
   }, [approvedEvents, searchTerm, selectedCategory, selectedLanguage]);
 
   const now = new Date();
-  const liveEvents = filteredEvents.filter(e => new Date(e.date) <= now && (e.status === 'Live' || e.status === 'Approved'));
-  const upcomingEvents = filteredEvents.filter(e => new Date(e.date) > now && (e.status === 'Upcoming' || e.status === 'Approved'));
-  const pastEvents = filteredEvents.filter(e => new Date(e.date) <= now && e.status === 'Past');
+  const liveEvents = filteredEvents.filter(e => e.status === 'Live');
+  const upcomingEvents = filteredEvents.filter(e => e.status === 'Upcoming' || (e.status === 'Approved' && new Date(e.date) > now));
+  const pastEvents = filteredEvents.filter(e => e.status === 'Past' || (e.status === 'Approved' && new Date(e.date) <= now));
+
 
   return (
     <>
@@ -100,21 +101,21 @@ export default function Home() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                             {liveEvents.length > 0 ? liveEvents.map(event => (
                                 <EventCard key={event.id} event={event} />
-                            )) : <p className="col-span-full text-center text-muted-foreground">No live events match your criteria.</p>}
+                            )) : <p className="col-span-full text-center text-muted-foreground mt-8">No live events match your criteria.</p>}
                         </div>
                     </TabsContent>
                     <TabsContent value="upcoming">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                             {upcomingEvents.length > 0 ? upcomingEvents.map(event => (
                                 <EventCard key={event.id} event={event} />
-                            )) : <p className="col-span-full text-center text-muted-foreground">No upcoming events match your criteria.</p>}
+                            )) : <p className="col-span-full text-center text-muted-foreground mt-8">No upcoming events match your criteria.</p>}
                         </div>
                     </TabsContent>
                     <TabsContent value="past">
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
                             {pastEvents.length > 0 ? pastEvents.map(event => (
                                 <EventCard key={event.id} event={event} />
-                            )) : <p className="col-span-full text-center text-muted-foreground">No past events match your criteria.</p>}
+                            )) : <p className="col-span-full text-center text-muted-foreground mt-8">No past events match your criteria.</p>}
                         </div>
                     </TabsContent>
                 </Tabs>
