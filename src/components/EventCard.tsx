@@ -38,7 +38,7 @@ export function EventCard({ event, children }: { event: Event; children?: React.
 
   return (
     <Card className="w-full flex flex-col h-full overflow-hidden transition-all hover:shadow-lg">
-      <Link href={`/movies/${event.id}`} className="block">
+      <Link href={`/events/${event.id}`} className="block">
         <CardHeader className="p-0 relative">
           <Image
             src={event.bannerUrl || 'https://placehold.co/600x400.png'}
@@ -54,7 +54,7 @@ export function EventCard({ event, children }: { event: Event; children?: React.
         </CardHeader>
       </Link>
       <CardContent className="p-4 flex-grow">
-        <Link href={`/movies/${event.id}`} className="block">
+        <Link href={`/events/${event.id}`} className="block">
           <CardTitle className="text-lg font-headline hover:text-primary transition-colors">{event.title}</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">by {event.artist}</p>
         </Link>
@@ -76,11 +76,11 @@ export function EventCard({ event, children }: { event: Event; children?: React.
                 {isViewable && (
                     hasPurchased ? (
                         <Button asChild className="w-full">
-                            <Link href={`/movies/${event.id}`}>Watch Now</Link>
+                            <Link href={`/events/${event.id}`}>Watch Now</Link>
                         </Button>
                     ) : (
                         <Button asChild className="w-full">
-                            <Link href={`/movies/${event.id}/purchase`}>
+                            <Link href={`/events/${event.id}/purchase`}>
                                 <Ticket className="mr-2 h-4 w-4" />
                                 {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
                             </Link>
