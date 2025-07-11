@@ -1,17 +1,39 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import EventDetailClient from './EventDetailClient';
 import type { Event } from '@/lib/types';
-import { getEventById } from '@/lib/events';
+import { useEvents } from '@/hooks/useEvents';
 
-// This is now a Server Component. It can safely access params.
-export default async function EventDetailPage({ params }: { params: { eventId: string } }) {
-  // Fetch the event data on the server.
-  const event = await getEventById(params.eventId);
+export default function EventDetailPage() {
+  const { events } = useEvents();
+  const params = useParams();
+  const eventId = params.eventId as string;
   
+  const [event, setEvent] = useState<Event | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (events.length > 0 && eventId) {
+      const foundEvent = events.find(e => e.id === eventId);
+      setEvent(foundEvent);
+      setLoading(false);
+    }
+  }, [events, eventId]);
+
+  if (loading) {
+     return (
+        <div className="flex h-screen items-center justify-center">
+            <p>Loading event...</p>
+        </div>
+    );
+  }
+
   return (
     <>
       <Header />
-      {/* Pass the fetched event data to the Client Component as a prop. */}
       <EventDetailClient event={event} />
     </>
   );
