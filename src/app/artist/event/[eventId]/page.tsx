@@ -1,11 +1,8 @@
 'use client';
-import { useParams } from 'next/navigation';
 import EventForm from '@/app/artist/event/EventForm';
 
-export default function EditEventPage() {
-  const params = useParams();
-  const eventId = params.eventId as string;
+export default function EditEventPage({ params }: { params: { eventId: string } }) {
+  const eventId = params.eventId;
 
-  // Pass only the eventId string, not the whole params object.
   return <EventForm eventId={eventId} />;
 }
