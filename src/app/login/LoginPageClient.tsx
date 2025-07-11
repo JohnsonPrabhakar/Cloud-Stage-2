@@ -83,7 +83,7 @@ export default function LoginPageClient() {
               <Input
                 id="email"
                 type="email"
-                placeholder="artist@cloudstage.live or admin@cloudstage.live"
+                placeholder="Enter your email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -94,7 +94,7 @@ export default function LoginPageClient() {
               <Input
                 id="password"
                 type="password"
-                placeholder="PASSWORD"
+                placeholder="Enter your password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
