@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -160,8 +161,6 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 ...data,
                 id: eventId,
                 date: combinedDateTime.toISOString(),
-                artist: currentArtist.name,
-                artistEmail: user.email,
                 status: 'Pending' as const, // Reset status on edit
                 bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             };
@@ -351,7 +350,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                             <FormControl>
                                 <Input type="number" placeholder="Enter 0 for a free event" {...field} disabled={!isVerified} />
                             </FormControl>
-                            {!isVerified && <FormDescription>Ticket pricing is available for verified artists only.</FormDescription>}
+                             {!isVerified && <FormDescription>Ticket pricing is available for verified artists only.</FormDescription>}
                             </FormItem>
                         )}
                     />
