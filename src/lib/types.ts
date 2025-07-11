@@ -51,9 +51,11 @@ export type ArtistStatus = 'Pending' | 'Approved' | 'Rejected';
 export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
 
 export type VerificationRequest = {
-    videoUrl1: string;
-    videoUrl2: string;
+    youtubeUrl: string;
+    socialUrl: string;
+    performanceFileUrl: string;
     description: string;
+    agreedToTerms: boolean;
     status: VerificationStatus;
     rejectionReason?: string;
 }

@@ -8,7 +8,7 @@ interface ArtistContextType {
   artists: Artist[];
   addArtist: (artist: Omit<Artist, 'id' | 'status' | 'rejectionReason'>) => void;
   updateArtistStatus: (artistId: string, status: ArtistStatus, reason?: string) => void;
-  submitVerificationRequest: (artistId: string, request: Omit<VerificationRequest, 'status'>) => void;
+  submitVerificationRequest: (artistId: string, request: Omit<VerificationRequest, 'status' | 'rejectionReason'>) => void;
   updateVerificationStatus: (artistId: string, status: VerificationStatus, reason?: string) => void;
 }
 
@@ -65,7 +65,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
     updateArtistsInStorage(updatedArtists);
   };
 
-  const submitVerificationRequest = (artistId: string, request: Omit<VerificationRequest, 'status'>) => {
+  const submitVerificationRequest = (artistId: string, request: Omit<VerificationRequest, 'status' | 'rejectionReason'>) => {
     const updatedArtists = artists.map(artist => {
       if (artist.id === artistId) {
         return { ...artist, verificationRequest: { ...request, status: 'Pending' as const } };

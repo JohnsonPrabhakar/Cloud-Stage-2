@@ -6,12 +6,12 @@ import { useArtists } from '@/hooks/useArtists';
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ThumbsUp, ThumbsDown, Youtube, Video } from 'lucide-react';
+import { ThumbsUp, ThumbsDown, Youtube, Video, FileCheck2, Link as LinkIcon } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -36,9 +36,9 @@ function VerificationRequestCard({ artist, onApprove, onReject }: { artist: Arti
     
     return (
         <>
-            <Card>
-                <CardContent className="p-4">
-                    <div className="flex gap-4 mb-4">
+            <Card className="flex flex-col">
+                <CardHeader>
+                    <div className="flex gap-4">
                         <Avatar className="w-16 h-16 rounded-lg">
                             <AvatarImage src={artist.profilePictureUrl} alt={artist.name} />
                             <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
@@ -51,33 +51,45 @@ function VerificationRequestCard({ artist, onApprove, onReject }: { artist: Arti
                             {artist.verificationRequest?.status}
                         </Badge>
                     </div>
-
-                    <div className="space-y-3">
-                         <div>
-                            <h4 className="font-semibold text-sm">Reason for applying:</h4>
-                            <p className="text-sm text-muted-foreground">{artist.verificationRequest?.description}</p>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold text-sm">Submitted Video Links:</h4>
-                            <div className="flex flex-col gap-2 mt-1">
-                                <Link href={artist.verificationRequest?.videoUrl1 || '#'} target="_blank" className="text-sm text-primary hover:underline flex items-center gap-2"><Video className="w-4 h-4"/>{artist.verificationRequest?.videoUrl1}</Link>
-                                <Link href={artist.verificationRequest?.videoUrl2 || '#'} target="_blank" className="text-sm text-primary hover:underline flex items-center gap-2"><Video className="w-4 h-4"/>{artist.verificationRequest?.videoUrl2}</Link>
-                            </div>
+                </CardHeader>
+                <CardContent className="space-y-4 flex-grow">
+                     <div>
+                        <h4 className="font-semibold text-sm">Reason for Applying</h4>
+                        <p className="text-sm text-muted-foreground mt-1">{artist.verificationRequest?.description}</p>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-sm">Submitted Links</h4>
+                        <div className="flex flex-col gap-2 mt-2">
+                            <Link href={artist.verificationRequest?.youtubeUrl || '#'} target="_blank" className="text-sm text-primary hover:underline flex items-center gap-2"><Youtube className="w-4 h-4"/>{artist.verificationRequest?.youtubeUrl}</Link>
+                            <Link href={artist.verificationRequest?.socialUrl || '#'} target="_blank" className="text-sm text-primary hover:underline flex items-center gap-2"><LinkIcon className="w-4 h-4"/>{artist.verificationRequest?.socialUrl}</Link>
                         </div>
                     </div>
-                   
+                     <div>
+                        <h4 className="font-semibold text-sm">Uploaded Performance</h4>
+                        {artist.verificationRequest?.performanceFileUrl ? (
+                             <video controls src={artist.verificationRequest.performanceFileUrl} className="w-full aspect-video rounded-md mt-2 bg-black"></video>
+                        ) : (
+                            <p className="text-sm text-muted-foreground mt-1">No file uploaded.</p>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <FileCheck2 className="w-4 h-4 text-green-500" />
+                        <span>Agreed to terms and conditions.</span>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col items-stretch gap-2 pt-4">
                     {artist.verificationRequest?.status === 'Pending' && (
-                        <div className="flex gap-2 mt-4">
+                        <div className="flex gap-2">
                             <Button className="flex-1" size="sm" onClick={() => onApprove(artist.id)}><ThumbsUp className="mr-2"/>Approve</Button>
                             <Button className="flex-1" size="sm" variant="destructive" onClick={handleRejectClick}><ThumbsDown className="mr-2"/>Reject</Button>
                         </div>
                     )}
                      {artist.verificationRequest?.status === 'Rejected' && artist.verificationRequest?.rejectionReason && (
-                        <div className="mt-4 p-2 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
+                        <div className="p-2 bg-destructive/10 text-destructive text-sm rounded-md border border-destructive/20">
                            <strong>Rejection Reason:</strong> {artist.verificationRequest.rejectionReason}
                         </div>
                      )}
-                </CardContent>
+                </CardFooter>
             </Card>
 
             <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>

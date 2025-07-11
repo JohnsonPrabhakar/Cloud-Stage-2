@@ -11,13 +11,17 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
 
 const verificationFormSchema = z.object({
-  videoUrl1: z.string().url("Please enter a valid video URL."),
-  videoUrl2: z.string().url("Please enter a valid video URL."),
-  description: z.string().min(10, "Please provide a brief description.").max(500, "Description cannot exceed 500 characters."),
+  youtubeUrl: z.string().url("A valid YouTube URL is required.").refine(url => url.includes('youtube.com') || url.includes('youtu.be'), "Must be a valid YouTube URL."),
+  socialUrl: z.string().url("A valid social media URL is required.").refine(url => url.includes('instagram.com') || url.includes('facebook.com'), "URL must be for Instagram or Facebook."),
+  performanceFileUrl: z.string().url("Please upload a performance video."),
+  description: z.string().min(20, "Please provide a brief description of at least 20 characters.").max(500, "Description cannot exceed 500 characters."),
+  agreedToTerms: z.boolean().refine(val => val === true, { message: "You must agree to the terms and conditions." }),
 });
 
 type VerificationFormValues = z.infer<typeof verificationFormSchema>;
@@ -33,20 +37,34 @@ export default function VerificationPageClient() {
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationFormSchema),
     defaultValues: {
-      videoUrl1: '',
-      videoUrl2: '',
+      youtubeUrl: '',
+      socialUrl: '',
+      performanceFileUrl: '',
       description: '',
+      agreedToTerms: false,
     },
   });
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        form.setError('performanceFileUrl', { type: 'manual', message: 'File size cannot exceed 10MB.' });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        form.setValue('performanceFileUrl', result, { shouldValidate: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
   function onSubmit(data: VerificationFormValues) {
     if (!currentArtist) return;
 
-    submitVerificationRequest(currentArtist.id, {
-        videoUrl1: data.videoUrl1,
-        videoUrl2: data.videoUrl2,
-        description: data.description,
-    });
+    submitVerificationRequest(currentArtist.id, data);
 
     toast({
       title: "Verification Request Submitted",
@@ -83,7 +101,7 @@ export default function VerificationPageClient() {
       <CardHeader>
         <CardTitle className="text-3xl font-headline">Apply for Verified Badge</CardTitle>
         <CardDescription>
-            To get verified, please provide links to two videos showcasing your work and tell us why you should be verified.
+            Submit the required information to apply for verification. This helps us confirm your identity and authenticity.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -91,13 +109,14 @@ export default function VerificationPageClient() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
               control={form.control}
-              name="videoUrl1"
+              name="youtubeUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Video Link 1</FormLabel>
+                  <FormLabel>YouTube Link</FormLabel>
                   <FormControl>
                     <Input placeholder="https://youtube.com/watch?v=..." {...field} />
                   </FormControl>
+                  <FormDescription>A link to a video of your performance or work.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -105,13 +124,29 @@ export default function VerificationPageClient() {
 
             <FormField
               control={form.control}
-              name="videoUrl2"
+              name="socialUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Video Link 2</FormLabel>
+                  <FormLabel>Instagram or Facebook Link</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://vimeo.com/..." {...field} />
+                    <Input placeholder="https://instagram.com/your-profile" {...field} />
                   </FormControl>
+                  <FormDescription>Link to your official artist page on Instagram or Facebook.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="performanceFileUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Upload Performance Video</FormLabel>
+                   <FormControl>
+                        <Input type="file" accept="video/*" onChange={handleFileUpload} />
+                    </FormControl>
+                    <FormDescription>Upload a short video of your performance. Max 10MB.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -131,6 +166,30 @@ export default function VerificationPageClient() {
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="agreedToTerms"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                       Agree to terms and conditions
+                    </FormLabel>
+                    <FormDescription>
+                      You agree to our <Link href="#" className="underline hover:text-primary">Terms of Service</Link> and that you meet our minimum policy standards.
+                    </FormDescription>
+                     <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />
