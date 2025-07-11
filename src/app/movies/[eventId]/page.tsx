@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEvents } from '@/hooks/useEvents';
 import { useTickets } from '@/hooks/useTickets';
@@ -12,12 +12,11 @@ import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle, ArrowLeft } from 'lucide
 import { format } from 'date-fns';
 import Header from '@/components/layout/Header';
 
-export default function EventDetailPage() {
+export default function EventDetailPage({ params }: { params: { eventId: string } }) {
   const { events } = useEvents();
   const { hasTicket } = useTickets();
-  const params = useParams();
   const router = useRouter();
-  const eventId = params.eventId as string;
+  const eventId = params.eventId;
 
   const event = events.find(e => e.id === eventId);
   const hasPurchasedTicket = hasTicket(eventId);
