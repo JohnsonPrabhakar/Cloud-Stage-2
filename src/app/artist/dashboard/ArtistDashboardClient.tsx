@@ -8,9 +8,10 @@ import { EventCard } from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Edit, Share2 } from 'lucide-react';
+import { PlusCircle, Edit, Share2, ShieldCheck } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 export default function ArtistDashboardClient() {
   const { events } = useEvents();
@@ -30,6 +31,7 @@ export default function ArtistDashboardClient() {
         <div className="space-y-1">
           <h1 className="text-3xl font-headline flex items-center gap-2">
             Welcome, {currentArtist?.name || 'Artist'}!
+             {currentArtist?.isVerified && <Badge className="bg-green-500 text-white"><ShieldCheck className="w-4 h-4 mr-1"/>Verified</Badge>}
           </h1>
           <p className="text-muted-foreground">Manage your events, profile, and audience on CloudStage.</p>
         </div>
@@ -44,6 +46,23 @@ export default function ArtistDashboardClient() {
           </Button>
         </div>
       </div>
+
+      {!currentArtist?.isVerified && (
+        <Card className="mb-8 bg-secondary">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ShieldCheck/> Get Verified!</CardTitle>
+            <CardDescription>
+              Apply for verification to unlock features like paid events and build more trust with your audience.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild>
+              <Link href="/artist/verify">Start Verification Process</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
 
       <Tabs defaultValue="upcoming" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
