@@ -1,6 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import EventForm from '@/app/artist/event/form/page';
+import EventForm from '@/app/artist/event/EventForm';
 
 export default function EditEventPage() {
   const params = useParams();
