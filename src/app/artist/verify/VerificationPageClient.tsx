@@ -20,11 +20,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { Upload, Award, ShieldCheck, Clock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { Artist } from '@/lib/types';
 
 const verificationFormSchema = z.object({
   youtubeUrl: z.string().url("A valid YouTube URL is required.").refine(url => url.includes('youtube.com') || url.includes('youtu.be'), "Must be a YouTube URL."),
   socialUrl: z.string().url("A valid social media URL is required.").refine(url => url.includes('instagram.com') || url.includes('facebook.com'), "Must be an Instagram or Facebook URL."),
-  performanceFile: z.any().refine(file => file?.length === 1, "A performance video is required."),
+  performanceFile: z.any().refine(file => file?.length === 1, "A performance video is required.").refine(file => file?.[0]?.size <= 50 * 1024 * 1024, "File size must be 50MB or less."),
   description: z.string().min(20, "Please provide a reason of at least 20 characters."),
   agreedToTerms: z.literal(true, {
     errorMap: () => ({ message: "You must agree to the terms and conditions." }),
@@ -75,11 +76,11 @@ export default function VerificationPageClient() {
   const { artists, submitVerificationRequest } = useArtists();
   const { toast } = useToast();
   
-  const [currentArtist, setCurrentArtist] = useState<any>(null);
+  const [currentArtist, setCurrentArtist] = useState<Artist | undefined>(undefined);
   const [isFileUploading, setIsFileUploading] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && user) {
+    if (!isAuthLoading && user && artists.length > 0) {
       const artist = artists.find(a => a.email === user.email);
       setCurrentArtist(artist);
     }
