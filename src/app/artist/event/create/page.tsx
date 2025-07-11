@@ -1,5 +1,5 @@
 'use client';
-import EventForm from '../form/page';
+import EventForm from '@/app/artist/event/form/page';
 export default function CreateEventPage() {
     return <EventForm />;
 }
