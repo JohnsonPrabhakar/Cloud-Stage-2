@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Home, PlusCircle, User, Menu } from 'lucide-react';
 
 function ArtistHeader() {
@@ -28,6 +28,9 @@ function ArtistHeader() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="pr-0">
+                            <SheetHeader>
+                                <SheetTitle className="sr-only">Artist Menu</SheetTitle>
+                            </SheetHeader>
                              <div className="flex flex-col h-full">
                                 <Link href="/artist/dashboard" className="flex items-center" onClick={() => setSheetOpen(false)}>
                                     <h2 className="text-2xl font-headline p-4">Artist Panel</h2>

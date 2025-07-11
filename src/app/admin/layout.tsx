@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { LayoutDashboard, BarChart2, User, Film, Users, BadgeCheck, Menu, X } from 'lucide-react';
 
 function AdminHeader() {
@@ -31,6 +31,9 @@ function AdminHeader() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="pr-0">
+                             <SheetHeader>
+                                <SheetTitle className="sr-only">Admin Menu</SheetTitle>
+                            </SheetHeader>
                              <div className="flex flex-col h-full">
                                 <Link href="/admin" className="flex items-center" onClick={() => setSheetOpen(false)}>
                                     <h2 className="text-2xl font-headline p-4">Admin Panel</h2>
