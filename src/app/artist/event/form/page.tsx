@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -157,11 +158,11 @@ export default function EventForm({ eventId }: { eventId?: string }) {
         const eventToUpdate = events.find(e => e.id === eventId);
         if (eventToUpdate) {
             const updatedEvent = {
-                ...eventToUpdate,
-                ...data,
-                id: eventId,
+                ...eventToUpdate, // Keep original fields like artist, email, isBoosted
+                ...data, // Overwrite with new form data
+                id: eventId, // Ensure ID is correct
                 date: combinedDateTime.toISOString(),
-                status: 'Pending' as const, // Reset status on edit
+                status: 'Pending' as const, // Always reset status on edit for re-approval
                 bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
             };
             updateEvent(updatedEvent);
@@ -301,8 +302,8 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <FormItem>
                         <FormLabel>Date & Time</FormLabel>
-                        <div className="flex gap-2 items-start">
-                            <FormField
+                        <div className="flex gap-2">
+                             <FormField
                             control={form.control}
                             name="date"
                             render={({ field }) => (
@@ -350,7 +351,10 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                             <FormControl>
                                 <Input type="number" placeholder="Enter 0 for a free event" {...field} disabled={!isVerified} />
                             </FormControl>
-                             {!isVerified && <FormDescription>Ticket pricing is available for verified artists only.</FormDescription>}
+                             <FormDescription className={!isVerified ? '' : 'hidden'}>
+                                Ticket pricing is available for verified artists only.
+                             </FormDescription>
+                             <FormMessage/>
                             </FormItem>
                         )}
                     />
