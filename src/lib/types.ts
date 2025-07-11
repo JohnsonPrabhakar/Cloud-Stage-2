@@ -1,3 +1,4 @@
+
 import { EVENT_CATEGORIES } from "./events";
 import { MOVIE_GENRES, MOVIE_LANGUAGES } from "./movies";
 import { ARTIST_CATEGORIES, ARTIST_TYPES } from "./artists";
@@ -67,4 +68,23 @@ export type Artist = {
   bio: string;
   status: ArtistStatus;
   rejectionReason?: string;
+  isVerified: boolean;
+  followers: string[]; // array of user emails
+};
+
+
+// Artist Verification
+export type VerificationRequestStatus = 'Pending' | 'Approved' | 'Rejected';
+export type VerificationRequest = {
+    id: string;
+    artistId: string;
+    artistName: string;
+    artistEmail: string;
+    artistProfilePictureUrl: string;
+    status: VerificationRequestStatus;
+    workUrl1: string; // YouTube
+    workUrl2: string; // Instagram or Facebook
+    performanceVideoUrl: string;
+    reason: string;
+    rejectionReason?: string;
 };

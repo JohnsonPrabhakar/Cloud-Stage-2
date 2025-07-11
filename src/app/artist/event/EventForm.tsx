@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { format, parse } from 'date-fns';
+import { format } from 'date-fns';
 import { cn, getYoutubeVideoId } from '@/lib/utils';
 import { useEvents } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/use-toast';
@@ -22,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { CalendarIcon, Sparkles } from 'lucide-react';
 
 const eventFormSchema = z.object({
@@ -113,6 +115,10 @@ export default function EventForm({ eventId }: { eventId?: string }) {
   };
 
   const onSubmit: SubmitHandler<EventFormValues> = (data) => {
+    // Force price to 0 if artist is not verified
+    if (!currentArtist?.isVerified) {
+        data.ticketPrice = 0;
+    }
     const [hours, minutes] = data.time ? data.time.split(':').map(Number) : [0,0];
     const combinedDateTime = new Date(data.date);
     combinedDateTime.setHours(hours, minutes);
@@ -146,6 +152,8 @@ export default function EventForm({ eventId }: { eventId?: string }) {
     }
     router.push('/artist/dashboard');
   };
+
+  const isVerified = currentArtist?.isVerified ?? false;
 
   return (
     <div>
@@ -307,13 +315,26 @@ export default function EventForm({ eventId }: { eventId?: string }) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Ticket Price (USD)</FormLabel>
-                  <FormControl>
-                    <Input 
-                        type="number" 
-                        placeholder="e.g., 10" 
-                        {...field}
-                    />
-                  </FormControl>
+                  <TooltipProvider>
+                      <Tooltip>
+                          <TooltipTrigger asChild>
+                              <FormControl>
+                                  <Input
+                                      type="number"
+                                      placeholder="e.g., 10"
+                                      {...field}
+                                      disabled={!isVerified}
+                                      value={isVerified ? field.value : 0}
+                                  />
+                              </FormControl>
+                          </TooltipTrigger>
+                          {!isVerified && (
+                              <TooltipContent>
+                                  <p>Only verified artists can sell tickets. Price is set to 0.</p>
+                              </TooltipContent>
+                          )}
+                      </Tooltip>
+                  </TooltipProvider>
                   <FormMessage />
                 </FormItem>
               )}

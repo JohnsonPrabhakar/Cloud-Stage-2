@@ -1,3 +1,4 @@
+
 'use client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
@@ -5,7 +6,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { LayoutDashboard, BarChart2, User, Film, Users, Menu } from 'lucide-react';
+import { LayoutDashboard, BarChart2, User, Film, Users, Menu, ShieldCheck } from 'lucide-react';
 
 function AdminHeader() {
     const { logout } = useAuth();
@@ -14,6 +15,7 @@ function AdminHeader() {
     const navLinks = [
         { href: "/admin", icon: <LayoutDashboard />, label: "Events" },
         { href: "/admin/artist-registrations", icon: <Users />, label: "Artist Registrations" },
+        { href: "/admin/verification-requests", icon: <ShieldCheck />, label: "Verification Requests" },
         { href: "/admin/add-movie", icon: <Film />, label: "Add Movie" },
         { href: "/admin/analytics", icon: <BarChart2 />, label: "Analytics" },
     ];

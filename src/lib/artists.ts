@@ -1,4 +1,5 @@
-import type { Artist } from './types';
+
+import type { Artist, VerificationRequest } from './types';
 
 export const ARTIST_TYPES = ["Solo Artist", "Band"] as const;
 
@@ -38,6 +39,8 @@ export const dummyArtists: Artist[] = [
         },
         bio: 'A passionate musician bringing soul to the world.',
         status: 'Approved',
+        isVerified: true,
+        followers: ['fan1@example.com', 'fan2@example.com'],
     },
     {
         id: 'artist2',
@@ -54,6 +57,8 @@ export const dummyArtists: Artist[] = [
         },
         bio: 'A band that will rock your world.',
         status: 'Approved',
+        isVerified: false,
+        followers: ['fan3@example.com'],
     },
      {
         id: 'artist3',
@@ -71,6 +76,8 @@ export const dummyArtists: Artist[] = [
         bio: 'Bringing laughter to every corner of the globe.',
         status: 'Rejected',
         rejectionReason: 'Incomplete social media profile verification.',
+        isVerified: false,
+        followers: [],
     },
     {
         id: 'artist4',
@@ -87,5 +94,23 @@ export const dummyArtists: Artist[] = [
         },
         bio: 'Just here to make you laugh.',
         status: 'Pending',
+        isVerified: false,
+        followers: [],
     },
+];
+
+
+export const dummyVerificationRequests: VerificationRequest[] = [
+    {
+        id: 'vr1',
+        artistId: 'artist2',
+        artistName: 'The Rockers',
+        artistEmail: 'contact@therockers.com',
+        artistProfilePictureUrl: 'https://placehold.co/100x100.png',
+        status: 'Pending',
+        workUrl1: 'https://youtube.com/therockers-live',
+        workUrl2: 'https://instagram.com/therockers',
+        performanceVideoUrl: '', // In a real app this would be a URL to stored video
+        reason: 'We are an established band with a growing following and would like to start selling tickets for our exclusive online concerts.'
+    }
 ];

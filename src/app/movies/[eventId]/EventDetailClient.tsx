@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -8,11 +9,15 @@ import type { Event } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle, ArrowLeft, Hourglass } from 'lucide-react';
+import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle, ArrowLeft, Hourglass, UserPlus, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
+import { useArtists } from '@/hooks/useArtists';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function EventDetailClient({ event }: { event: Event | undefined }) {
   const { hasTicket } = useTickets();
+  const { artists, followArtist, unfollowArtist } = useArtists();
+  const { user } = useAuth();
   const router = useRouter();
 
   if (!event) {
@@ -25,6 +30,21 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   
   const eventId = event.id;
   const hasPurchasedTicket = hasTicket(eventId);
+  
+  const artist = artists.find(a => a.email === event.artistEmail);
+  const isFollowing = user && artist?.followers?.includes(user.email);
+
+  const handleFollow = () => {
+      if (user && artist) {
+          if (isFollowing) {
+              unfollowArtist(artist.id, user.email);
+          } else {
+              followArtist(artist.id, user.email);
+          }
+      } else if (!user) {
+          router.push('/login');
+      }
+  };
 
   const videoId = getYoutubeVideoId(event.streamUrl);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
@@ -65,17 +85,25 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
               )}
           </CardHeader>
           <CardContent className="p-6">
-            <div className="flex justify-between items-start">
+            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div>
                 <Badge variant="secondary" className="mb-4">{event.category}</Badge>
                 <CardTitle className="text-3xl md:text-4xl font-headline">{event.title}</CardTitle>
               </div>
-              {!canWatch && (
-                <Button onClick={() => router.push(`/movies/${event.id}/purchase`)}>
-                  <Ticket className="mr-2"/>
-                  {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
-                </Button>
-              )}
+              <div className="flex flex-shrink-0 gap-2">
+                 {artist && user && user.email !== artist.email && (
+                    <Button variant="outline" onClick={handleFollow}>
+                        {isFollowing ? <UserCheck className="mr-2" /> : <UserPlus className="mr-2" />}
+                        {isFollowing ? 'Following' : 'Follow'}
+                    </Button>
+                 )}
+                {!canWatch && (
+                  <Button onClick={() => router.push(`/movies/${event.id}/purchase`)}>
+                    <Ticket className="mr-2"/>
+                    {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
+                  </Button>
+                )}
+              </div>
             </div>
             
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground my-4">
