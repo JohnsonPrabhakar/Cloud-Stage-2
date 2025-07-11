@@ -52,9 +52,14 @@ export default function Header() {
                     <Button onClick={logout}>Logout</Button>
                     </>
                 ) : (
+                  <>
                     <Button asChild>
                         <Link href="/login">Login</Link>
                     </Button>
+                    <Button variant="outline" asChild>
+                        <Link href="/login">Artist Login</Link>
+                    </Button>
+                  </>
                 )}
             </div>
             <div className="md:hidden">
@@ -86,7 +91,10 @@ export default function Header() {
                             <Button onClick={logout}>Logout</Button>
                         </>
                         ) : (
+                          <>
                             <Button asChild><Link href="/login">Login</Link></Button>
+                            <Button variant="outline" asChild><Link href="/login">Artist Login</Link></Button>
+                          </>
                         )}
                     </div>
                     </SheetContent>
