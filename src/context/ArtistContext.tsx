@@ -8,7 +8,7 @@ import { dummyArtists, dummyVerificationRequests } from '@/lib/artists';
 const LOCALSTORAGE_SIZE_LIMIT = 4 * 1024 * 1024; // 4MB
 
 // A custom hook to manage state in localStorage
-function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
+function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     if (typeof window === 'undefined') {
       return initialValue;
@@ -22,19 +22,22 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
     }
   });
 
-  const setValue = (value: T) => {
+  const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
+      const stringifiedValue = JSON.stringify(valueToStore);
+      
+      // Safeguard against exceeding quota
+      if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
+           console.error(
+              `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds limit. A large object (like a file) was likely passed unintentionally.`
+           );
+           return; // Abort saving to prevent crash
+      }
+
       setStoredValue(valueToStore);
+
       if (typeof window !== 'undefined') {
-        const stringifiedValue = JSON.stringify(valueToStore);
-        // Safeguard against exceeding quota
-        if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
-             console.error(
-                `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds limit. A large object (like a file) was likely passed unintentionally.`
-             );
-             return; // Abort saving to prevent crash
-        }
         window.localStorage.setItem(key, stringifiedValue);
       }
     } catch (error) {
@@ -74,7 +77,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       isVerified: false,
       followers: [],
     };
-    setArtists([newArtist, ...artists]);
+    setArtists(prevArtists => [newArtist, ...prevArtists]);
   };
 
   const updateArtist = (updatedArtistData: Artist) => {
@@ -117,7 +120,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
         status: 'Pending',
         ...requestData,
       };
-      setVerificationRequests([newRequest, ...verificationRequests]);
+      setVerificationRequests(prevRequests => [newRequest, ...prevRequests]);
   };
   
   const approveVerification = (artistId: string) => {
@@ -127,13 +130,13 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
     ));
 
     // Update the request's status
-    setVerificationRequests(requests => requests.map(req => 
+    setVerificationRequests((requests: VerificationRequest[]) => requests.map((req: VerificationRequest) => 
         req.artistId === artistId ? { ...req, status: 'Approved' } : req
     ));
   };
 
   const rejectVerification = (artistId: string, reason: string) => {
-     setVerificationRequests(requests => requests.map(req => 
+     setVerificationRequests((requests: VerificationRequest[]) => requests.map((req: VerificationRequest) => 
         req.artistId === artistId ? { ...req, status: 'Rejected', rejectionReason: reason } : req
     ));
   };
