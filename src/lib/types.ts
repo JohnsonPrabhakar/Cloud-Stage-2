@@ -1,5 +1,6 @@
 import { EVENT_CATEGORIES } from "./events";
 import { MOVIE_GENRES, MOVIE_LANGUAGES } from "./movies";
+import { ARTIST_CATEGORIES, ARTIST_TYPES } from "./artists";
 
 export type EventCategory = typeof EVENT_CATEGORIES[number];
 
@@ -42,3 +43,28 @@ export type Movie = {
     videoUrl: string;
     bannerUrl: string;
 }
+
+// Artist Registration Types
+export type ArtistType = typeof ARTIST_TYPES[number];
+export type ArtistCategory = typeof ARTIST_CATEGORIES[number];
+export type ArtistStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export type Artist = {
+  id: string;
+  artistType: ArtistType;
+  name: string;
+  category: ArtistCategory;
+  profilePictureUrl: string;
+  email: string;
+  phone: string;
+  address: string;
+  location: string;
+  socials: {
+    instagram?: string;
+    youtube?: string;
+    facebook?: string;
+  };
+  bio: string;
+  status: ArtistStatus;
+  rejectionReason?: string;
+};

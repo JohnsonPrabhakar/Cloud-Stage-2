@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -101,6 +102,12 @@ export default function LoginPage() {
               Login
             </Button>
           </form>
+            <div className="mt-4 text-center text-sm">
+              New Artist?{' '}
+              <Link href="/artist-register" className="underline hover:text-primary">
+                Register here
+              </Link>
+            </div>
         </CardContent>
       </Card>
     </div>

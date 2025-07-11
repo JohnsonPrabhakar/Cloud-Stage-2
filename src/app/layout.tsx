@@ -6,6 +6,7 @@ import { AuthProvider } from '@/context/AuthContext';
 import { EventProvider } from '@/context/EventContext';
 import { TicketProvider } from '@/context/TicketContext';
 import { MovieProvider } from '@/context/MovieContext';
+import { ArtistProvider } from '@/context/ArtistContext';
 import { cn } from '@/lib/utils';
 
 export default function RootLayout({
@@ -24,10 +25,12 @@ export default function RootLayout({
         <AuthProvider>
           <EventProvider>
             <MovieProvider>
+              <ArtistProvider>
                 <TicketProvider>
                     {children}
                     <Toaster />
                 </TicketProvider>
+              </ArtistProvider>
             </MovieProvider>
           </EventProvider>
         </AuthProvider>
