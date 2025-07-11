@@ -48,6 +48,15 @@ export type Movie = {
 export type ArtistType = typeof ARTIST_TYPES[number];
 export type ArtistCategory = typeof ARTIST_CATEGORIES[number];
 export type ArtistStatus = 'Pending' | 'Approved' | 'Rejected';
+export type VerificationStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export type VerificationRequest = {
+    videoUrl1: string;
+    videoUrl2: string;
+    description: string;
+    status: VerificationStatus;
+    rejectionReason?: string;
+}
 
 export type Artist = {
   id: string;
@@ -67,4 +76,6 @@ export type Artist = {
   bio: string;
   status: ArtistStatus;
   rejectionReason?: string;
+  isVerified?: boolean;
+  verificationRequest?: VerificationRequest;
 };

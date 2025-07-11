@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, BarChart2, User, Film, Users } from 'lucide-react';
+import { LayoutDashboard, BarChart2, User, Film, Users, BadgeCheck } from 'lucide-react';
 
 function AdminNav() {
     const { logout } = useAuth();
@@ -14,6 +14,7 @@ function AdminNav() {
             <ul className="space-y-2 flex-grow">
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin"><LayoutDashboard/>Events</Link></Button></li>
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/artist-registrations"><Users/>Artist Registrations</Link></Button></li>
+                <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/verification-requests"><BadgeCheck/>Verification Requests</Link></Button></li>
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/add-movie"><Film/>Add Movie</Link></Button></li>
                 <li><Button variant="ghost" className="w-full justify-start gap-2" asChild><Link href="/admin/analytics"><BarChart2/>Analytics</Link></Button></li>
             </ul>
@@ -44,7 +45,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-56 hidden md:block border-r">
+      <aside className="w-64 hidden md:block border-r">
           <AdminNav />
       </aside>
       <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">

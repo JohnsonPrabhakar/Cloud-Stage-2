@@ -25,19 +25,20 @@ export const dummyArtists: Artist[] = [
     {
         id: 'artist1',
         artistType: 'Solo Artist',
-        name: 'John Doe',
+        name: 'Elena Vance',
         category: 'Music',
         profilePictureUrl: 'https://placehold.co/100x100.png',
-        email: 'john.doe@example.com',
+        email: 'artist@cloudstage.live',
         phone: '123-456-7890',
         address: '123 Music Lane, Nashville, TN',
         location: 'New York, USA',
         socials: {
-            instagram: 'https://instagram.com/johndoe',
-            youtube: 'https://youtube.com/johndoe'
+            instagram: 'https://instagram.com/elenavance',
+            youtube: 'https://youtube.com/elenavance'
         },
         bio: 'A passionate musician bringing soul to the world.',
-        status: 'Pending',
+        status: 'Approved',
+        isVerified: true,
     },
     {
         id: 'artist2',
@@ -54,6 +55,7 @@ export const dummyArtists: Artist[] = [
         },
         bio: 'A band that will rock your world.',
         status: 'Approved',
+        isVerified: false,
     },
      {
         id: 'artist3',
@@ -71,5 +73,21 @@ export const dummyArtists: Artist[] = [
         bio: 'Bringing laughter to every corner of the globe.',
         status: 'Rejected',
         rejectionReason: 'Incomplete social media profile verification.',
+    },
+    {
+        id: 'artist4',
+        artistType: 'Solo Artist',
+        name: 'Sammy G',
+        category: 'Stand-up Comedy',
+        profilePictureUrl: 'https://placehold.co/100x100.png',
+        email: 'sammyg@example.com',
+        phone: '111-222-3333',
+        address: '101 Joke Rd, New York, NY',
+        location: 'New York, USA',
+        socials: {
+            instagram: 'https://instagram.com/sammyg'
+        },
+        bio: 'Just here to make you laugh.',
+        status: 'Pending',
     },
 ];

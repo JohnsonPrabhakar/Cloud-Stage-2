@@ -9,6 +9,7 @@ import Image from 'next/image';
 
 import { useEvents } from '@/hooks/useEvents';
 import { useAuth } from '@/hooks/useAuth';
+import { useArtists } from '@/hooks/useArtists';
 import { getYoutubeVideoId } from '@/lib/utils';
 import { EVENT_CATEGORIES } from '@/lib/events';
 import { generateEventDescription } from '@/ai/flows/generate-event-description';
@@ -43,9 +44,13 @@ export default function CreateEventPage() {
   const router = useRouter();
   const { addEvent } = useEvents();
   const { user } = useAuth();
+  const { artists } = useArtists();
   const { toast } = useToast();
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const currentArtist = artists.find(a => a.email === user?.email);
+  const isVerified = currentArtist?.isVerified;
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
@@ -104,13 +109,23 @@ export default function CreateEventPage() {
   };
 
   function onSubmit(data: EventFormValues) {
-    if (!user) return;
+    if (!user || !currentArtist) return;
+
+    if (!isVerified && data.ticketPrice > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Pricing Restricted',
+        description: 'You must be a verified artist to create paid events.',
+      });
+      return;
+    }
+    
     const videoId = getYoutubeVideoId(data.streamUrl);
     const newEvent = {
       id: new Date().getTime().toString(),
       ...data,
       date: data.date.toISOString(),
-      artist: user.email, // Replace with artist name from profile later
+      artist: currentArtist.name,
       artistEmail: user.email,
       status: 'Pending' as const,
       bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
@@ -260,8 +275,9 @@ export default function CreateEventPage() {
                             <FormItem>
                             <FormLabel>Ticket Price (USD)</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="Enter 0 for a free event" {...field} />
+                                <Input type="number" placeholder="Enter 0 for a free event" {...field} disabled={!isVerified} />
                             </FormControl>
+                            {!isVerified && <FormMessage>Ticket pricing is available for verified artists only.</FormMessage>}
                             <FormMessage />
                             </FormItem>
                         )}
