@@ -17,14 +17,21 @@ export default function Home() {
   const { events } = useEvents();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedLanguage, setSelectedLanguage] = useState('All');
+
+  const languages = useMemo(() => {
+    const allLanguages = events.map(event => event.language);
+    return ['All', ...Array.from(new Set(allLanguages))];
+  }, [events]);
 
   const filteredEvents = useMemo(() => {
     return events.filter(event => {
       const matchesCategory = selectedCategory === 'All' || event.category === selectedCategory;
+      const matchesLanguage = selectedLanguage === 'All' || event.language === selectedLanguage;
       const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesSearch && matchesLanguage;
     });
-  }, [events, searchTerm, selectedCategory]);
+  }, [events, searchTerm, selectedCategory, selectedLanguage]);
 
   const now = new Date();
   const liveEvents = filteredEvents.filter(e => new Date(e.date) <= now && e.status === 'Live');
@@ -83,7 +90,7 @@ export default function Home() {
                             className="w-full pl-10"
                         />
                     </div>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                     <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                         <SelectTrigger className="w-full md:w-[200px]">
                             <SelectValue placeholder="Filter by category" />
                         </SelectTrigger>
@@ -91,6 +98,16 @@ export default function Home() {
                             <SelectItem value="All">All Categories</SelectItem>
                             {EVENT_CATEGORIES.map((cat) => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                        <SelectTrigger className="w-full md:w-[200px]">
+                            <SelectValue placeholder="Filter by language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {languages.map((lang) => (
+                                <SelectItem key={lang} value={lang}>{lang === 'All' ? 'All Languages' : lang}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
