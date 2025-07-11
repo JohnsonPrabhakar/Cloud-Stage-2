@@ -8,7 +8,7 @@ import { getYoutubeVideoId } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle, ArrowLeft, Hourglass } from 'lucide-react';
 import { format } from 'date-fns';
 import Header from '@/components/layout/Header';
 
@@ -36,6 +36,7 @@ export default function EventDetailPage() {
   const videoId = getYoutubeVideoId(event.streamUrl);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
   const canWatch = hasPurchasedTicket || event.ticketPrice === 0;
+  const eventDate = new Date(event.date);
 
   return (
     <>
@@ -93,10 +94,14 @@ export default function EventDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4"/>
-                    <span>{format(new Date(event.date), 'EEEE, MMMM d, yyyy')}</span>
+                    <span>{format(eventDate, 'EEEE, MMMM d, yyyy')}</span>
                 </div>
                  <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4"/>
+                    <span>{format(eventDate, 'p')}</span>
+                </div>
+                 <div className="flex items-center gap-2">
+                    <Hourglass className="w-4 h-4"/>
                     <span>{event.duration} minutes</span>
                 </div>
                  <div className="flex items-center gap-2">

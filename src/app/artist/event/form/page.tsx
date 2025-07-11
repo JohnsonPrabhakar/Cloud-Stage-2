@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -34,6 +35,7 @@ const eventFormSchema = z.object({
   language: z.string().min(2, "Language is required."),
   streamUrl: z.string().url("Must be a valid YouTube URL.").refine(url => getYoutubeVideoId(url), "Must be a valid YouTube watch/embed URL."),
   date: z.date({ required_error: "A date is required." }),
+  time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Please enter a valid time in HH:mm format."),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   ticketPrice: z.coerce.number().min(0, "Ticket price cannot be negative."),
 });
@@ -62,6 +64,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
       genre: '',
       language: 'English',
       streamUrl: '',
+      time: '19:00',
       duration: 60,
       ticketPrice: 0,
     },
@@ -71,9 +74,11 @@ export default function EventForm({ eventId }: { eventId?: string }) {
     if (isEditMode) {
       const eventToEdit = events.find(e => e.id === eventId);
       if (eventToEdit) {
+        const eventDate = new Date(eventToEdit.date);
         form.reset({
           ...eventToEdit,
-          date: new Date(eventToEdit.date),
+          date: eventDate,
+          time: format(eventDate, "HH:mm"),
         });
         const videoId = getYoutubeVideoId(eventToEdit.streamUrl);
         if (videoId) {
@@ -139,13 +144,18 @@ export default function EventForm({ eventId }: { eventId?: string }) {
       return;
     }
     
+    const [hours, minutes] = data.time.split(':').map(Number);
+    const combinedDateTime = new Date(data.date);
+    combinedDateTime.setHours(hours);
+    combinedDateTime.setMinutes(minutes);
+
     const videoId = getYoutubeVideoId(data.streamUrl);
     
     if (isEditMode && eventId) {
         const updatedEvent = {
             id: eventId,
             ...data,
-            date: data.date.toISOString(),
+            date: combinedDateTime.toISOString(),
             artist: currentArtist.name,
             artistEmail: user.email,
             status: 'Pending' as const, // Reset status on edit
@@ -160,7 +170,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
         const newEvent = {
             id: new Date().getTime().toString(),
             ...data,
-            date: data.date.toISOString(),
+            date: combinedDateTime.toISOString(),
             artist: currentArtist.name,
             artistEmail: user.email,
             status: 'Pending' as const,
@@ -268,32 +278,47 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                             </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                            <FormLabel>Date & Time</FormLabel>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                <FormControl>
-                                    <Button
-                                    variant={"outline"}
-                                    className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
-                                    >
-                                    {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                    </Button>
-                                </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                                </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                          control={form.control}
+                          name="date"
+                          render={({ field }) => (
+                              <FormItem className="flex flex-col">
+                              <FormLabel>Date</FormLabel>
+                              <Popover>
+                                  <PopoverTrigger asChild>
+                                  <FormControl>
+                                      <Button
+                                      variant={"outline"}
+                                      className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                      >
+                                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                      </Button>
+                                  </FormControl>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-auto p-0" align="start">
+                                  <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                                  </PopoverContent>
+                              </Popover>
+                              <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                       <FormField
+                          control={form.control}
+                          name="time"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel>Time (24h)</FormLabel>
+                                  <FormControl>
+                                      <Input type="time" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                    </div>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
