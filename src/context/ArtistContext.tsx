@@ -110,7 +110,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       setArtists(updatedArtists);
   };
 
-  const submitVerificationRequest = (artistId: string, data: Omit<VerificationRequest, 'id' | 'artistId' | 'status' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl'>) => {
+  const submitVerificationRequest = (artistId: string, data: Omit<VerificationRequest, 'id' | 'artistId' | 'status' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'agreedToTerms' >) => {
       const artist = artists.find(a => a.id === artistId);
       if (!artist) return;
 

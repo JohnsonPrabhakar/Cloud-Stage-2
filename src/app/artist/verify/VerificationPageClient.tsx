@@ -102,8 +102,6 @@ export default function VerificationPageClient() {
         return;
     }
 
-    // If a video file is selected, use a placeholder URL.
-    // In a real app, you would upload the file and get a URL here.
     const videoUrl = data.performanceVideo?.[0] ? `/uploads/mock-video.mp4` : '';
 
     submitVerificationRequest(currentArtist.id, { 
