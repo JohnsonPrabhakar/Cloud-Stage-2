@@ -16,25 +16,25 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
   :root {
-    --background: 0 55% 30%;
+    --background: 0 0% 12%;
     --foreground: 0 0% 98%;
-    --card: 340 10% 15%;
+    --card: 0 0% 15%;
     --card-foreground: 0 0% 98%;
-    --popover: 340 15% 10%;
+    --popover: 0 0% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 48 83% 90%;
-    --primary-foreground: 340 30% 20%;
-    --secondary: 340 10% 25%;
+    --primary: 45 93% 90%;
+    --primary-foreground: 45 93% 50%;
+    --secondary: 0 0% 25%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 340 10% 25%;
+    --muted: 0 0% 25%;
     --muted-foreground: 0 0% 80%;
-    --accent: 340 10% 30%;
+    --accent: 0 0% 30%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 340 10% 30%;
-    --input: 340 10% 35%;
-    --ring: 48 83% 90%;
+    --border: 0 0% 30%;
+    --input: 0 0% 35%;
+    --ring: 45 83% 90%;
     --radius: 0.5rem;
   }
  
@@ -71,7 +71,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .gradient-background {
-    background-color: hsl(340 30% 10%);
-    background-image: radial-gradient(at 0% 0%, hsl(340, 40%, 25%) 0px, transparent 50%),
-                      radial-gradient(at 98% 98%, hsl(280, 40%, 20%) 0px, transparent 50%);
+    background-color: hsl(0 30% 10%);
+    background-image: radial-gradient(at 0% 0%, hsl(0, 40%, 25%) 0px, transparent 50%),
+                      radial-gradient(at 98% 98%, hsl(340, 40%, 20%) 0px, transparent 50%);
 }

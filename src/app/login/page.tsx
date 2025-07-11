@@ -6,7 +6,52 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Ticket } from 'lucide-react';
+
+function Logo() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 100 100"
+      className="h-10 w-10"
+      fill="currentColor"
+    >
+      <path
+        d="M83.8,62.8c-0.2-13.3-10.4-24.1-23.3-25.1c-2-8.3-9-14.7-17.7-14.7c-9.2,0-16.9,6.7-18.1,15.7C15.4,40.1,7.2,49,7.2,59.6c0,11.2,9.1,20.3,20.3,20.3h36.1C75,79.9,84,72.4,83.8,62.8z"
+        className="text-primary"
+      />
+      <g className="text-primary-foreground">
+        <path
+          d="M51,68.9c-4.4,0-8-3.6-8-8V47.3c0-4.4,3.6-8,8-8s8,3.6,8,8v13.6C59,65.3,55.4,68.9,51,68.9z"
+        />
+        <path
+          d="M48,49h6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M48,55h6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M48,61h6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M51,68.9v5.8c0,2.6-2.1,4.7-4.7,4.7h-0.6c-2.6,0-4.7-2.1-4.7-4.7v-5.8"
+          stroke="currentColor"
+          strokeWidth="3"
+          fill="none"
+        />
+        <rect x="44" y="79" width="14" height="4" rx="2" />
+      </g>
+    </svg>
+  );
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -23,7 +68,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm mx-auto">
         <CardHeader className="text-center">
             <div className="flex justify-center items-center gap-2 mb-2">
-                <Ticket className="h-8 w-8 text-primary" />
+                <Logo />
                 <CardTitle className="text-3xl font-headline">CloudStage</CardTitle>
             </div>
           <CardDescription>Enter your credentials to access your dashboard</CardDescription>
