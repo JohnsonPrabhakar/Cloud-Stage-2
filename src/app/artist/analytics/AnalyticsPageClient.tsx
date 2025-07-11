@@ -19,8 +19,12 @@ export default function ArtistAnalyticsPageClient() {
     const { artists } = useArtists();
     const { purchasedTickets } = useTickets();
 
-    const currentArtist = useMemo(() => artists.find(a => a.email === user?.email), [artists, user]);
-    const artistEvents = useMemo(() => events.filter(e => e.artistEmail === user?.email), [events, user]);
+    const currentArtist = useMemo(() => artists.find(a => a.email === user?.email), [artists, user?.email]);
+    
+    const artistEvents = useMemo(() => {
+        if (!user?.email) return [];
+        return events.filter(e => e.artistEmail === user.email);
+    }, [events, user?.email]);
 
     const analyticsData = useMemo(() => {
         return artistEvents.map(event => {
