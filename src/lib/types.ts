@@ -62,6 +62,7 @@ export type Artist = {
   profilePictureUrl: string;
   email: string;
   phone: string;
+  password?: string;
   address: string;
   location: string;
   socials: {

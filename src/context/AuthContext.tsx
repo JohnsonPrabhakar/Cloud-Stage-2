@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Check for artists
     const artist = artists.find(a => a.email === email);
-    if (artist && pass === 'PASSWORD') {
+    if (artist && (pass === 'PASSWORD' || pass === artist.password)) {
         const loggedInUser: User = { email, role: 'artist', name: artist.name };
         localStorage.setItem('user', JSON.stringify(loggedInUser));
         setUser(loggedInUser);

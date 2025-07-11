@@ -28,6 +28,7 @@ const artistFormSchema = z.object({
   category: z.enum(ARTIST_CATEGORIES, { required_error: 'Category is required.' }),
   profilePictureUrl: z.string().url("Please upload a profile picture."),
   email: z.string().email("Invalid email address."),
+  password: z.string().min(6, "Password must be at least 6 characters."),
   phone: z.string().min(10, "Phone number must be at least 10 digits."),
   address: z.string().min(5, "Address is required."),
   location: z.string().min(2, "Location is required."),
@@ -53,6 +54,7 @@ export default function ArtistRegisterPageClient() {
     defaultValues: {
       name: '',
       email: '',
+      password: '',
       phone: '',
       address: '',
       location: '',
@@ -83,6 +85,7 @@ export default function ArtistRegisterPageClient() {
         category: data.category,
         profilePictureUrl: data.profilePictureUrl,
         email: data.email,
+        password: data.password,
         phone: data.phone,
         address: data.address,
         location: data.location,
@@ -172,6 +175,16 @@ export default function ArtistRegisterPageClient() {
                         <FormMessage />
                     </FormItem>
                 )}/>
+                 <FormField control={form.control} name="password" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}/>
+              </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <FormField control={form.control} name="phone" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Phone Number</FormLabel>
@@ -179,24 +192,22 @@ export default function ArtistRegisterPageClient() {
                         <FormMessage />
                     </FormItem>
                 )}/>
-              </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField control={form.control} name="address" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Contact Address</FormLabel>
-                        <FormControl><Input placeholder="123 Main St, Anytown" {...field} /></FormControl>
-                        <FormMessage />
-                    </FormItem>
-                  )}/>
-                  <FormField control={form.control} name="location" render={({ field }) => (
+                <FormField control={form.control} name="location" render={({ field }) => (
                     <FormItem>
                         <FormLabel>Location</FormLabel>
                         <FormControl><Input placeholder="e.g., New York, USA" {...field} /></FormControl>
                         <FormMessage />
                     </FormItem>
-                  )}/>
+                )}/>
               </div>
+
+                <FormField control={form.control} name="address" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Contact Address</FormLabel>
+                        <FormControl><Input placeholder="123 Main St, Anytown" {...field} /></FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}/>
 
               <div>
                 <FormLabel>Social Media (at least one is required)</FormLabel>
