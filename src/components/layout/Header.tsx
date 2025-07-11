@@ -54,9 +54,6 @@ export default function Header() {
                 ) : (
                   <>
                     <Button asChild>
-                        <Link href="/login">Login</Link>
-                    </Button>
-                    <Button variant="outline" asChild>
                         <Link href="/login">Artist Login</Link>
                     </Button>
                   </>
@@ -92,8 +89,7 @@ export default function Header() {
                         </>
                         ) : (
                           <>
-                            <Button asChild><Link href="/login">Login</Link></Button>
-                            <Button variant="outline" asChild><Link href="/login">Artist Login</Link></Button>
+                            <Button asChild><Link href="/login">Artist Login</Link></Button>
                           </>
                         )}
                     </div>
