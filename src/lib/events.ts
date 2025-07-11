@@ -55,3 +55,21 @@ export const dummyEvents: Event[] = [
     generateEvent('8', 'Soulful Chants', 'Harmony Group', 'Devotional', new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=B7b4F3m3_e0', 'Pending'),
 ];
 
+// Centralized function to get an event by ID
+export async function getEventById(eventId: string): Promise<Event | undefined> {
+  // In a real app, this would be an API call.
+  // Here, we simulate fetching from either localStorage or the initial dummy data.
+  if (typeof window !== 'undefined') {
+    const storedEvents = localStorage.getItem('events');
+    if (storedEvents) {
+      try {
+        const events: Event[] = JSON.parse(storedEvents);
+        return events.find(e => e.id === eventId);
+      } catch (error) {
+        console.error("Failed to parse events from localStorage", error);
+      }
+    }
+  }
+  // Fallback to dummyEvents if localStorage is not available or empty
+  return dummyEvents.find(e => e.id === eventId);
+}
