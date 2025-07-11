@@ -4,8 +4,18 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu } from 'lucide-react';
+import { Menu, User, Ticket } from 'lucide-react';
 import { useTickets } from '@/hooks/useTickets';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+
 
 function Logo() {
   return (
@@ -56,6 +66,7 @@ function Logo() {
 export default function Header() {
   const { user, logout } = useAuth();
   const { purchasedTickets } = useTickets();
+  const userTickets = purchasedTickets.filter(t => t.userEmail === user?.email);
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -81,7 +92,7 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-             {purchasedTickets.length > 0 && (
+             {user && userTickets.length > 0 && (
                  <Link href="/my-tickets" className="text-foreground/60 transition-colors hover:text-foreground/80">
                     My Tickets
                 </Link>
@@ -92,17 +103,38 @@ export default function Header() {
         <div className="flex flex-1 items-center justify-end space-x-2">
             <div className="hidden md:flex items-center space-x-2">
                 {user ? (
-                    <>
-                    <Button variant="ghost" asChild>
-                        <Link href={user.role === 'admin' ? '/admin' : '/artist/dashboard'}>Dashboard</Link>
-                    </Button>
-                    <Button onClick={logout}>Logout</Button>
-                    </>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                           <Avatar className="h-8 w-8">
+                                <AvatarFallback>{user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}</AvatarFallback>
+                           </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                          <div className="flex flex-col space-y-1">
+                            <p className="text-sm font-medium leading-none">{user.name || user.email}</p>
+                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                          </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                           <Link href={user.role === 'admin' ? '/admin' : user.role === 'artist' ? '/artist/dashboard' : '/my-tickets'}>
+                            {user.role === 'user' ? <Ticket className="mr-2"/> : <User className="mr-2" />}
+                            <span>{user.role === 'user' ? 'My Tickets' : 'Dashboard'}</span>
+                           </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={logout}>
+                           Logout
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                 ) : (
                   <>
-                    <Button asChild>
-                        <Link href="/login">Artist Login</Link>
-                    </Button>
+                    <Button variant="ghost" asChild><Link href="/user-login">Login</Link></Button>
+                    <Button asChild><Link href="/user-login">Sign Up</Link></Button>
                   </>
                 )}
             </div>
@@ -125,7 +157,7 @@ export default function Header() {
                                 {link.label}
                             </Link>
                         ))}
-                        {purchasedTickets.length > 0 && (
+                        {user && userTickets.length > 0 && (
                             <Link href="/my-tickets" className="text-lg">My Tickets</Link>
                         )}
                         <hr/>
@@ -136,7 +168,7 @@ export default function Header() {
                         </>
                         ) : (
                           <>
-                            <Button asChild><Link href="/login">Artist Login</Link></Button>
+                            <Button asChild><Link href="/user-login">Login / Sign Up</Link></Button>
                           </>
                         )}
                     </div>

@@ -27,11 +27,13 @@ export type Event = {
   thumbsUp?: number;
 };
 
-export type UserRole = 'artist' | 'admin';
+export type UserRole = 'artist' | 'admin' | 'user';
 
 export type User = {
   email: string;
   role: UserRole;
+  name?: string;
+  phone?: string;
 };
 
 export type MovieGenre = typeof MOVIE_GENRES[number];

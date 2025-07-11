@@ -7,7 +7,7 @@ import type { PurchasedTicket, GuestDetails } from '@/lib/types';
 interface TicketContextType {
   purchasedTickets: PurchasedTicket[];
   purchaseTicket: (eventId: string, userEmail: string, guestDetails?: GuestDetails) => void;
-  hasTicket: (eventId: string) => boolean;
+  hasTicket: (eventId: string, userEmail?: string | null) => boolean;
 }
 
 export const TicketContext = createContext<TicketContextType | undefined>(undefined);
@@ -33,6 +33,8 @@ export function TicketProvider({ children }: { children: ReactNode }) {
   };
 
   const purchaseTicket = (eventId: string, userEmail: string, guestDetails?: GuestDetails) => {
+    if (hasTicket(eventId, userEmail)) return; // Prevent duplicate tickets
+
     const newTicket: PurchasedTicket = {
         eventId,
         userEmail,
@@ -43,7 +45,11 @@ export function TicketProvider({ children }: { children: ReactNode }) {
     updateTicketsInStorage(updatedTickets);
   };
 
-  const hasTicket = (eventId: string) => {
+  const hasTicket = (eventId: string, userEmail?: string | null) => {
+    if (userEmail) {
+        return purchasedTickets.some(ticket => ticket.eventId === eventId && ticket.userEmail === userEmail);
+    }
+    // For guest checkout legacy or checks without user context
     return purchasedTickets.some(ticket => ticket.eventId === eventId);
   }
 

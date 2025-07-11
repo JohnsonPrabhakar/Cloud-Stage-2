@@ -7,6 +7,7 @@ import { EventProvider } from '@/context/EventContext';
 import { TicketProvider } from '@/context/TicketContext';
 import { MovieProvider } from '@/context/MovieContext';
 import { ArtistProvider } from '@/context/ArtistContext';
+import { UserProvider } from '@/context/UserContext';
 import { cn } from '@/lib/utils';
 
 export default function RootLayout({
@@ -22,18 +23,20 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=PT+Sans:wght@400;700&family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased", "gradient-background")}>
-        <AuthProvider>
-          <EventProvider>
-            <MovieProvider>
-              <ArtistProvider>
-                <TicketProvider>
-                    {children}
-                    <Toaster />
-                </TicketProvider>
-              </ArtistProvider>
-            </MovieProvider>
-          </EventProvider>
-        </AuthProvider>
+        <ArtistProvider>
+          <UserProvider>
+            <AuthProvider>
+              <EventProvider>
+                <MovieProvider>
+                    <TicketProvider>
+                        {children}
+                        <Toaster />
+                    </TicketProvider>
+                </MovieProvider>
+              </EventProvider>
+            </AuthProvider>
+          </UserProvider>
+        </ArtistProvider>
       </body>
     </html>
   );

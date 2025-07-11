@@ -72,7 +72,7 @@ export default function LoginPageClient() {
         <CardHeader className="text-center">
             <div className="flex justify-center items-center gap-2 mb-2">
                 <Logo />
-                <CardTitle className="text-3xl font-headline">CloudStage</CardTitle>
+                <CardTitle className="text-3xl font-headline">Artist & Admin Login</CardTitle>
             </div>
           <CardDescription>Enter your credentials to access your dashboard</CardDescription>
         </CardHeader>
@@ -83,7 +83,7 @@ export default function LoginPageClient() {
               <Input
                 id="email"
                 type="email"
-                placeholder="artist@cloudstage.live"
+                placeholder="artist@cloudstage.live or admin@cloudstage.live"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -108,6 +108,12 @@ export default function LoginPageClient() {
               New Artist?{' '}
               <Link href="/artist-register" className="underline hover:text-primary">
                 Register here
+              </Link>
+            </div>
+             <div className="mt-4 text-center text-sm">
+              Not an artist?{' '}
+              <Link href="/user-login" className="underline hover:text-primary">
+                Login as a user
               </Link>
             </div>
             <div className="mt-6 text-center">

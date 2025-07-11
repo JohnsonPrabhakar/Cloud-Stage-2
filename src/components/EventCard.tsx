@@ -6,8 +6,9 @@ import type { Event, EventCategory } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Music, Mic, Wand2, Leaf, MessageSquare, Wrench, Sparkles, Tag, Ticket } from 'lucide-react';
+import { Calendar, Music, Mic, Wand2, Leaf, MessageSquare, Wrench, Sparkles, Tag, Ticket, Play } from 'lucide-react';
 import { useTickets } from '@/hooks/useTickets';
+import { useAuth } from '@/hooks/useAuth';
 
 const categoryIcons: Record<EventCategory, React.ElementType> = {
   "Music": Music,
@@ -30,8 +31,9 @@ const statusColors = {
 
 export function EventCard({ event, children }: { event: Event; children?: React.ReactNode }) {
   const Icon = categoryIcons[event.category] || Tag;
+  const { user } = useAuth();
   const { hasTicket } = useTickets();
-  const hasPurchased = hasTicket(event.id);
+  const hasPurchased = hasTicket(event.id, user?.email);
 
   const isViewable = event.status === 'Live' || event.status === 'Upcoming' || event.status === 'Past' || event.status === 'Approved';
 
@@ -74,18 +76,11 @@ export function EventCard({ event, children }: { event: Event; children?: React.
         {children ? children : (
             <>
                 {isViewable && (
-                    hasPurchased ? (
-                        <Button asChild className="w-full">
-                            <Link href={`/events/${event.id}`}>Watch Now</Link>
-                        </Button>
-                    ) : (
-                        <Button asChild className="w-full">
-                            <Link href={`/events/${event.id}/purchase`}>
-                                <Ticket className="mr-2 h-4 w-4" />
-                                {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
-                            </Link>
-                        </Button>
-                    )
+                    <Button asChild className="w-full">
+                        <Link href={`/events/${event.id}`}>
+                          { hasPurchased || event.ticketPrice === 0 ? <><Play className="mr-2 h-4 w-4"/>Watch Now</> : <><Ticket className="mr-2 h-4 w-4" />Get Ticket</> }
+                        </Link>
+                    </Button>
                 )}
             </>
         )}

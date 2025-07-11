@@ -1,13 +1,19 @@
 'use client';
 import { useTickets } from '@/hooks/useTickets';
 import { useEvents } from '@/hooks/useEvents';
+import { useAuth } from '@/hooks/useAuth';
 import { EventCard } from '@/components/EventCard';
+import { useRouter } from 'next/navigation';
 
 export default function MyTicketsPageClient() {
     const { purchasedTickets } = useTickets();
     const { events } = useEvents();
+    const { user } = useAuth();
+    const router = useRouter();
 
-    const myEvents = events.filter(event => purchasedTickets.some(ticket => ticket.eventId === event.id));
+    const myEvents = events.filter(event => 
+        purchasedTickets.some(ticket => ticket.eventId === event.id && ticket.userEmail === user?.email)
+    );
 
     return (
         <main className="container py-8 md:py-12 px-4 md:px-6">

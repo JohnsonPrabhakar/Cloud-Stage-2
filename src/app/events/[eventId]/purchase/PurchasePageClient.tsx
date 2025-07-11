@@ -4,19 +4,25 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useEvents } from '@/hooks/useEvents';
+import { useTickets } from '@/hooks/useTickets';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import type { Event } from '@/lib/types';
-import { GuestCheckoutDialog } from '@/components/GuestCheckoutDialog';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { Ticket, Calendar, Clock, Mic, ArrowLeft } from 'lucide-react';
+import { Ticket, Calendar, Clock, Mic, ArrowLeft, Loader2, CreditCard, ShieldCheck } from 'lucide-react';
+
 
 export default function PurchasePageClient({ eventId }: { eventId: string }) {
   const router = useRouter();
   const { events } = useEvents();
-  const [isCheckoutOpen, setCheckoutOpen] = useState(false);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { purchaseTicket } = useTickets();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const event = events.find(e => e.id === eventId);
 
@@ -36,10 +42,29 @@ export default function PurchasePageClient({ eventId }: { eventId: string }) {
     );
   }
 
+  const handlePurchase = () => {
+    if (!user) {
+        toast({variant: "destructive", title: "Authentication Error", description: "You must be logged in to purchase a ticket."});
+        return;
+    }
+    
+    setIsProcessing(true);
+    
+    // Simulate payment processing for paid tickets
+    setTimeout(() => {
+        purchaseTicket(event.id, user.email);
+        toast({
+            title: event.ticketPrice > 0 ? "✅ Payment Successful!" : "🎫 Ticket Confirmed!",
+            description: `Your ticket for "${event.title}" is confirmed.`,
+        });
+        router.push(`/events/${event.id}`);
+        setIsProcessing(false);
+    }, 1500);
+  }
+
   const eventDate = new Date(event.date);
 
   return (
-    <>
       <main className="container py-8 md:py-12 px-4 md:px-6">
         <Button variant="ghost" onClick={() => router.back()} className="mb-4">
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -77,18 +102,19 @@ export default function PurchasePageClient({ eventId }: { eventId: string }) {
               <span>Total Price</span>
               <span>{event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : 'Free'}</span>
             </div>
-            <Button onClick={() => setCheckoutOpen(true)} className="w-full mt-6">
-              <Ticket className="mr-2" />
-              {event.ticketPrice > 0 ? 'Proceed to Checkout' : 'Get Free Ticket'}
-            </Button>
+            
           </CardContent>
+            <CardFooter className="flex-col gap-4">
+                <Button onClick={handlePurchase} className="w-full" disabled={isProcessing}>
+                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2"/>}
+                    {isProcessing ? 'Processing...' : (event.ticketPrice > 0 ? 'Proceed to Checkout' : 'Get Free Ticket')}
+                </Button>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-green-500" />
+                    <span>Secure and Encrypted Payment</span>
+                </div>
+            </CardFooter>
         </Card>
       </main>
-      <GuestCheckoutDialog
-        isOpen={isCheckoutOpen}
-        onOpenChange={setCheckoutOpen}
-        event={event}
-      />
-    </>
   );
 }

@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useTickets } from '@/hooks/useTickets';
 import { getYoutubeVideoId } from '@/lib/utils';
@@ -10,7 +9,7 @@ import type { Event } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Mic, Tag, Ticket, ArrowLeft, UserPlus, UserCheck, ThumbsUp, Star, Share2, LogOut, Send } from 'lucide-react';
+import { Calendar, Clock, Mic, Tag, Ticket, ArrowLeft, UserPlus, UserCheck, ThumbsUp, Star, Share2, LogOut, Send, Play } from 'lucide-react';
 import { format } from 'date-fns';
 import { useArtists } from '@/hooks/useArtists';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,11 +29,12 @@ interface ChatMessage {
 }
 
 export default function EventDetailClient({ event }: { event: Event | undefined }) {
+  const { user } = useAuth();
   const { hasTicket } = useTickets();
   const { artists, followArtist, unfollowArtist } = useArtists();
-  const { user } = useAuth();
   const { giveThumbsUp } = useEvents();
   const router = useRouter();
+  const pathname = usePathname();
   const { toast } = useToast();
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -52,21 +52,34 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   }
   
   const eventId = event.id;
-  const hasPurchasedTicket = hasTicket(eventId);
+  const hasPurchasedTicket = hasTicket(eventId, user?.email);
   
   const artist = artists.find(a => a.email === event.artistEmail);
   const isFollowing = user && artist?.followers?.includes(user.email);
 
   const handleFollow = () => {
-      if (user && artist) {
+      if (!user) {
+          sessionStorage.setItem('redirectToAfterLogin', pathname);
+          router.push('/user-login');
+          return;
+      }
+      if (artist) {
           if (isFollowing) {
               unfollowArtist(artist.id, user.email);
           } else {
               followArtist(artist.id, user.email);
           }
-      } else if (!user) {
-          router.push('/login');
       }
+  };
+
+  const handleWatchNow = () => {
+      if (!user) {
+          sessionStorage.setItem('redirectToAfterLogin', pathname);
+          router.push('/user-login');
+      } else if (!hasPurchasedTicket && event.ticketPrice > 0) {
+          router.push(`/events/${eventId}/purchase`);
+      }
+      // If user is logged in and has a ticket, the video will be shown.
   };
 
   const handleThumbsUp = () => {
@@ -93,7 +106,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
       if (chatInput.trim()) {
           const newMessage: ChatMessage = {
               id: Date.now(),
-              name: user?.email.split('@')[0] || 'Guest',
+              name: user?.name || 'Guest',
               message: chatInput,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           };
@@ -104,7 +117,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
 
   const videoId = getYoutubeVideoId(event.streamUrl);
   const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1` : null;
-  const canWatch = hasPurchasedTicket || event.ticketPrice === 0;
+  const canWatch = user && (hasPurchasedTicket || event.ticketPrice === 0);
   const eventDate = new Date(event.date);
 
   return (
@@ -115,19 +128,21 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
             </Button>
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant="destructive"><LogOut className="mr-2"/>Leave Event</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle></AlertDialogHeader>
-                    <AlertDialogDescription>Are you sure you want to leave this event?</AlertDialogDescription>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Stay</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => router.push('/events')}>Leave</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            {user && (
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive"><LogOut className="mr-2"/>Leave Event</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle></AlertDialogHeader>
+                        <AlertDialogDescription>Are you sure you want to leave this event?</AlertDialogDescription>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Stay</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => router.push('/events')}>Leave</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
@@ -145,14 +160,20 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                 ></iframe>
                             </div>
                         ) : (
-                            <Image
-                                src={event.bannerUrl}
-                                alt={event.title}
-                                width={1250}
-                                height={700}
-                                className="w-full aspect-video object-cover"
-                                data-ai-hint="event hero"
-                            />
+                            <div className="w-full aspect-video relative">
+                                <Image
+                                    src={event.bannerUrl}
+                                    alt={event.title}
+                                    layout="fill"
+                                    className="object-cover"
+                                    data-ai-hint="event hero"
+                                />
+                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                    <Button size="lg" onClick={handleWatchNow}>
+                                        <Play className="mr-2"/> Watch Now
+                                    </Button>
+                                </div>
+                            </div>
                         )}
                     </CardHeader>
                     <CardContent className="p-6">
@@ -190,7 +211,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         <CardTitle>Interaction</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-2">
-                        {artist && user && user.email !== artist.email && (
+                        {artist && user?.email !== artist.email && (
                             <Button variant="outline" onClick={handleFollow}>
                                 {isFollowing ? <UserCheck className="mr-2" /> : <UserPlus className="mr-2" />}
                                 {isFollowing ? 'Following' : `Follow ${artist.artistType === 'Band' ? 'Band' : 'Artist'}`}
@@ -226,7 +247,6 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                 <div key={msg.id} className="flex gap-2 text-sm">
                                     <Avatar className="h-8 w-8">
                                         <AvatarFallback>{msg.name.charAt(0).toUpperCase()}</AvatarFallback>
-
                                     </Avatar>
                                     <div className="flex-1">
                                         <div className="flex items-baseline gap-2">
@@ -249,7 +269,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                             />
                             <Button onClick={handleSendChatMessage} disabled={!user}><Send/></Button>
                         </div>
-                        {!user && <p className="text-xs text-muted-foreground text-center">Please log in to chat.</p>}
+                        {!user && <p className="text-xs text-muted-foreground text-center">Please <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/user-login')}>log in</Button> to chat.</p>}
                     </CardContent>
                 </Card>
             </aside>
