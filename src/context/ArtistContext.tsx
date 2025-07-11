@@ -5,6 +5,14 @@ import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Artist, ArtistStatus, VerificationRequest, VerificationRequestStatus } from '@/lib/types';
 import { dummyArtists, dummyVerificationRequests } from '@/lib/artists';
 
+// Define the shape of the data submitted from the verification form
+interface VerificationRequestData {
+    workUrl1: string;
+    workUrl2: string;
+    performanceVideoUrl: string;
+    reason: string;
+}
+
 interface ArtistContextType {
   artists: Artist[];
   addArtist: (artist: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers' | 'rejectionReason'>) => void;
@@ -13,7 +21,7 @@ interface ArtistContextType {
   followArtist: (artistId: string, userEmail: string) => void;
   unfollowArtist: (artistId: string, userEmail: string) => void;
   verificationRequests: VerificationRequest[];
-  submitVerificationRequest: (artistId: string, data: Omit<VerificationRequest, 'id' | 'artistId' | 'status' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'agreedToTerms' >) => void;
+  submitVerificationRequest: (artistId: string, data: VerificationRequestData) => void;
   approveVerification: (artistId: string) => void;
   rejectVerification: (artistId: string, reason: string) => void;
 }
@@ -110,7 +118,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       setArtists(updatedArtists);
   };
 
-  const submitVerificationRequest = (artistId: string, data: Omit<VerificationRequest, 'id' | 'artistId' | 'status' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'agreedToTerms' >) => {
+  const submitVerificationRequest = (artistId: string, data: VerificationRequestData) => {
       const artist = artists.find(a => a.id === artistId);
       if (!artist) return;
 

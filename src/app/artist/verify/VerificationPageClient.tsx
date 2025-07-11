@@ -102,6 +102,8 @@ export default function VerificationPageClient() {
         return;
     }
 
+    // This is the CRITICAL FIX: create a mock URL and pass ONLY that.
+    // Do NOT pass `data` or `...data` which contains the full File object.
     const videoUrl = data.performanceVideo?.[0] ? `/uploads/mock-video.mp4` : '';
 
     submitVerificationRequest(currentArtist.id, { 
