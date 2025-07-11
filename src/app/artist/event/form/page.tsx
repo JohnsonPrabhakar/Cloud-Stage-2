@@ -278,6 +278,22 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                             </FormItem>
                         )}
                     />
+                    <FormField
+                        control={form.control}
+                        name="duration"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Duration (minutes)</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="e.g., 90" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                           control={form.control}
@@ -319,22 +335,6 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                           )}
                       />
                     </div>
-                </div>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                    <FormField
-                        control={form.control}
-                        name="duration"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Duration (minutes)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="e.g., 90" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
                      <FormField
                         control={form.control}
                         name="ticketPrice"
