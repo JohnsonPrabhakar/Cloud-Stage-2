@@ -78,7 +78,7 @@ export default function ArtistDashboard() {
                         {event.isBoosted && <Badge variant="outline" className="text-accent border-accent">Boosted</Badge>}
                         <div className="flex gap-2 ml-auto">
                             <Button variant="outline" size="icon" asChild>
-                                <Link href={`/artist/event/create/${event.id}`}>
+                                <Link href={`/artist/event/${event.id}`}>
                                     <Edit className="h-4 w-4"/>
                                 </Link>
                             </Button>
