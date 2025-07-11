@@ -5,6 +5,8 @@ import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Artist, ArtistStatus, VerificationRequest, VerificationRequestStatus } from '@/lib/types';
 import { dummyArtists, dummyVerificationRequests } from '@/lib/artists';
 
+const LOCALSTORAGE_SIZE_LIMIT = 4 * 1024 * 1024; // 4MB
+
 // A custom hook to manage state in localStorage
 function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
@@ -25,9 +27,15 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => voi
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
       if (typeof window !== 'undefined') {
-        // This is where the quota error was happening.
-        // It's fixed now because we no longer pass the large file object here.
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        const stringifiedValue = JSON.stringify(valueToStore);
+        // Safeguard against exceeding quota
+        if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
+             console.error(
+                `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds limit. A large object (like a file) was likely passed unintentionally.`
+             );
+             return; // Abort saving to prevent crash
+        }
+        window.localStorage.setItem(key, stringifiedValue);
       }
     } catch (error) {
       console.error(`Error setting localStorage key “${key}”:`, error);
