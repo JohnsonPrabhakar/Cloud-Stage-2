@@ -57,7 +57,7 @@ function VerificationRequestCard({ request, onApprove, onReject }: { request: Ve
                      <div>
                         <h4 className="font-semibold">Performance Video</h4>
                          {request.performanceVideoUrl ? (
-                            <video controls width="100%" className="rounded-lg mt-2">
+                            <video controls width="100%" className="rounded-lg mt-2" key={request.performanceVideoUrl}>
                                 <source src={request.performanceVideoUrl} type="video/mp4" />
                                 Your browser does not support the video tag.
                             </video>
@@ -66,12 +66,13 @@ function VerificationRequestCard({ request, onApprove, onReject }: { request: Ve
                     <div>
                         <h4 className="font-semibold">Links</h4>
                         <div className="flex gap-4 mt-2">
-                             <Button variant="outline" size="sm" asChild>
+                             {request.workUrl1 && <Button variant="outline" size="sm" asChild>
                                 <Link href={request.workUrl1} target="_blank"><Youtube className="mr-2"/>YouTube</Link>
-                             </Button>
-                             <Button variant="outline" size="sm" asChild>
+                             </Button>}
+                             {request.workUrl2 && <Button variant="outline" size="sm" asChild>
                                 <Link href={request.workUrl2} target="_blank"><LinkIcon className="mr-2"/>Social</Link>
-                             </Button>
+                             </Button>}
+                             {!request.workUrl1 && !request.workUrl2 && <p className="text-sm text-muted-foreground">No links provided.</p>}
                         </div>
                     </div>
                     {request.status === 'Pending' && (

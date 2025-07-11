@@ -102,30 +102,23 @@ export default function VerificationPageClient() {
         return;
     }
 
-    const processAndSubmit = (videoDataUrl = '') => {
-        submitVerificationRequest(currentArtist.id, { 
-            workUrl1: data.workUrl1 || '',
-            workUrl2: data.workUrl2 || '',
-            reason: data.reason,
-            performanceVideoUrl: videoDataUrl,
-        });
-        toast({
-            title: "Verification Request Submitted!",
-            description: "Your application is under review. We'll notify you soon.",
-        });
-        router.push('/artist/dashboard');
-    }
+    // If a video file is selected, use a placeholder URL.
+    // In a real app, you would upload the file and get a URL here.
+    const videoUrl = data.performanceVideo?.[0] ? `/uploads/mock-video.mp4` : '';
 
-    const file = data.performanceVideo?.[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            processAndSubmit(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-    } else {
-        processAndSubmit();
-    }
+    submitVerificationRequest(currentArtist.id, { 
+        workUrl1: data.workUrl1 || '',
+        workUrl2: data.workUrl2 || '',
+        reason: data.reason,
+        performanceVideoUrl: videoUrl,
+    });
+
+    toast({
+        title: "Verification Request Submitted!",
+        description: "Your application is under review. We'll notify you soon.",
+    });
+
+    router.push('/artist/dashboard');
   }
 
   if (isAuthLoading || artists.length === 0) {
@@ -254,4 +247,3 @@ export default function VerificationPageClient() {
     </Card>
   );
 }
-
