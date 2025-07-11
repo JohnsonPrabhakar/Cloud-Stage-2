@@ -12,14 +12,14 @@ function Logo() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 100 100"
-      className="h-8 w-8 text-primary"
+      className="h-8 w-8"
       fill="currentColor"
     >
       <path
         d="M83.8,62.8c-0.2-13.3-10.4-24.1-23.3-25.1c-2-8.3-9-14.7-17.7-14.7c-9.2,0-16.9,6.7-18.1,15.7C15.4,40.1,7.2,49,7.2,59.6c0,11.2,9.1,20.3,20.3,20.3h36.1C75,79.9,84,72.4,83.8,62.8z"
-        style={{ color: 'hsl(var(--primary))' }}
+        className="text-foreground/80"
       />
-      <g style={{ color: 'hsl(var(--primary-foreground))' }}>
+      <g className="text-primary">
         <path
           d="M51,68.9c-4.4,0-8-3.6-8-8V47.3c0-4.4,3.6-8,8-8s8,3.6,8,8v13.6C59,65.3,55.4,68.9,51,68.9z"
         />
