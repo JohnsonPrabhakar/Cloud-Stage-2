@@ -1,41 +1,17 @@
-'use client';
-
-import { useEffect, useState } from 'react';
 import Header from '@/components/layout/Header';
 import EventDetailClient from './EventDetailClient';
 import type { Event } from '@/lib/types';
-import { getEventById } from '@/lib/events'; // Using the new centralized function
+import { getEventById } from '@/lib/events';
 
-export default function EventDetailPage({ params }: { params: { eventId: string } }) {
-  const [event, setEvent] = useState<Event | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchEvent = async () => {
-      // Since this is a client component, we simulate an async fetch
-      // getEventById will get data from localStorage if available
-      const foundEvent = await getEventById(params.eventId);
-      setEvent(foundEvent);
-      setLoading(false);
-    };
-
-    fetchEvent();
-  }, [params.eventId]);
-
-  if (loading) {
-    return (
-        <>
-            <Header />
-            <div className="container py-12 text-center">
-                <p>Loading event...</p>
-            </div>
-        </>
-    );
-  }
+// This is now a Server Component. It can safely access params.
+export default async function EventDetailPage({ params }: { params: { eventId: string } }) {
+  // Fetch the event data on the server.
+  const event = await getEventById(params.eventId);
   
   return (
     <>
       <Header />
+      {/* Pass the fetched event data to the Client Component as a prop. */}
       <EventDetailClient event={event} />
     </>
   );
