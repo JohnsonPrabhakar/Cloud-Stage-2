@@ -22,10 +22,8 @@ export default function ArtistAnalyticsPageClient() {
   const { events } = useEvents();
   const { purchasedTickets } = useTickets();
 
-  const currentArtist = useMemo(() => {
-    if (!user) return null;
-    return artists.find(a => a.email === user.email);
-  }, [user, artists]);
+  // Find the artist directly without useMemo to avoid re-render loops
+  const currentArtist = artists.find(a => a.email === user?.email);
   
   const analyticsData = useMemo(() => {
     if (!currentArtist) return null;
