@@ -42,7 +42,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-64 hidden md:block border-r">
+      <aside className="w-56 hidden md:block border-r">
           <AdminNav />
       </aside>
       <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-background">

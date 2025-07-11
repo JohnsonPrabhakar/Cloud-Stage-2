@@ -1,8 +1,7 @@
 'use client';
 
-import { createContext, useState, type ReactNode } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Event, EventStatus } from '@/lib/types';
-import { dummyEvents } from '@/lib/events';
 
 interface EventContextType {
   events: Event[];
@@ -13,18 +12,40 @@ interface EventContextType {
 export const EventContext = createContext<EventContextType | undefined>(undefined);
 
 export function EventProvider({ children }: { children: ReactNode }) {
-  const [events, setEvents] = useState<Event[]>(dummyEvents);
+  const [events, setEvents] = useState<Event[]>([]);
 
+  useEffect(() => {
+    try {
+      const storedEvents = localStorage.getItem('events');
+      if (storedEvents) {
+        setEvents(JSON.parse(storedEvents));
+      } else {
+        // If no events in storage, start with an empty array
+        localStorage.setItem('events', JSON.stringify([]));
+        setEvents([]);
+      }
+    } catch (error) {
+      console.error("Failed to parse events from localStorage", error);
+      localStorage.setItem('events', JSON.stringify([])); // Reset if parsing fails
+      setEvents([]);
+    }
+  }, []);
+
+  const updateEventsInStorage = (updatedEvents: Event[]) => {
+    setEvents(updatedEvents);
+    localStorage.setItem('events', JSON.stringify(updatedEvents));
+  };
+  
   const updateEventStatus = (eventId: string, status: EventStatus) => {
-    setEvents(prevEvents =>
-      prevEvents.map(event =>
-        event.id === eventId ? { ...event, status } : event
-      )
+    const updatedEvents = events.map(event =>
+      event.id === eventId ? { ...event, status } : event
     );
+    updateEventsInStorage(updatedEvents);
   };
 
   const addEvent = (event: Event) => {
-    setEvents(prevEvents => [event, ...prevEvents]);
+    const updatedEvents = [event, ...events];
+    updateEventsInStorage(updatedEvents);
   };
 
   return (
