@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { CalendarIcon, Sparkles } from 'lucide-react';
@@ -350,7 +351,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                             <FormControl>
                                 <Input type="number" placeholder="Enter 0 for a free event" {...field} disabled={!isVerified} />
                             </FormControl>
-                            {!isVerified && <FormMessage>Ticket pricing is available for verified artists only.</FormMessage>}
+                            {!isVerified && <FormDescription>Ticket pricing is available for verified artists only.</FormDescription>}
                             </FormItem>
                         )}
                     />
