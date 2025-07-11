@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { LayoutDashboard, BarChart2, User, Film, Users, Menu, ShieldCheck } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 function AdminHeader() {
     const { logout } = useAuth();
