@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Home, PlusCircle, User, Menu } from 'lucide-react';
+import { Home, PlusCircle, User, Menu, BarChart2 } from 'lucide-react';
 
 function ArtistHeader() {
     const { logout } = useAuth();
@@ -14,6 +14,7 @@ function ArtistHeader() {
     const navLinks = [
         { href: "/artist/dashboard", icon: <Home />, label: "Dashboard" },
         { href: "/artist/event/create", icon: <PlusCircle />, label: "Create Event" },
+        { href: "/artist/analytics", icon: <BarChart2 />, label: "Analytics" },
     ];
 
     return (

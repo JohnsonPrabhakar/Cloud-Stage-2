@@ -8,22 +8,14 @@ import { EventCard } from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Edit, Share2, Award, Users, BarChart, ShieldCheck } from 'lucide-react';
+import { PlusCircle, Edit, Share2 } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
-import { useTickets } from '@/hooks/useTickets';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
-const formatCurrency = (value: number) => `$${value.toLocaleString()}`;
-const formatNumber = (value: number) => value.toLocaleString();
 
 export default function ArtistDashboardClient() {
   const { events } = useEvents();
   const { user } = useAuth();
   const { artists } = useArtists();
-  const { purchasedTickets } = useTickets();
 
   const currentArtist = artists.find(a => a.email === user?.email);
   const artistEvents = events.filter(e => e.artistEmail === user?.email);
@@ -31,22 +23,6 @@ export default function ArtistDashboardClient() {
   const liveEvents = artistEvents.filter(e => e.status === 'Live');
   const upcomingEvents = artistEvents.filter(e => e.status === 'Upcoming' || e.status === 'Approved');
   const pastEvents = artistEvents.filter(e => e.status === 'Past');
-
-  const analyticsData = useMemo(() => {
-    return artistEvents.map(event => {
-        const ticketsForEvent = purchasedTickets.filter(t => t.eventId === event.id);
-        const revenue = ticketsForEvent.length * event.ticketPrice;
-        return {
-            id: event.id,
-            title: event.title,
-            ticketsSold: ticketsForEvent.length,
-            revenue: revenue,
-            attendees: ticketsForEvent.length, // Assuming all ticket holders attend for now
-        };
-    });
-  }, [artistEvents, purchasedTickets]);
-
-  const totalFollowers = currentArtist?.followers?.length || 0;
 
   return (
     <div>
@@ -70,11 +46,10 @@ export default function ArtistDashboardClient() {
       </div>
 
       <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="upcoming">Upcoming Events ({upcomingEvents.length})</TabsTrigger>
             <TabsTrigger value="live">Live Now ({liveEvents.length})</TabsTrigger>
             <TabsTrigger value="past">Past Events ({pastEvents.length})</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="live" className="mt-6">
@@ -119,40 +94,6 @@ export default function ArtistDashboardClient() {
             ) : (
                 <p className="text-muted-foreground text-center pt-8">You have no past events.</p>
             )}
-        </TabsContent>
-
-        <TabsContent value="analytics" className="mt-6">
-          <Card>
-              <CardHeader>
-                  <CardTitle>My Event Analytics</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                   <Table>
-                      <TableHeader>
-                          <TableRow>
-                              <TableHead>Event</TableHead>
-                              <TableHead className="text-center">Tickets Sold</TableHead>
-                              <TableHead className="text-center">Attendees</TableHead>
-                              <TableHead className="text-right">Total Revenue</TableHead>
-                          </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                          {analyticsData.length > 0 ? analyticsData.map(data => (
-                              <TableRow key={data.id}>
-                                  <TableCell>{data.title}</TableCell>
-                                  <TableCell className="text-center">{formatNumber(data.ticketsSold)}</TableCell>
-                                  <TableCell className="text-center">{formatNumber(data.attendees)}</TableCell>
-                                  <TableCell className="text-right">{formatCurrency(data.revenue)}</TableCell>
-                              </TableRow>
-                          )) : (
-                              <TableRow>
-                                  <TableCell colSpan={4} className="text-center text-muted-foreground">No event data to display.</TableCell>
-                              </TableRow>
-                          )}
-                      </TableBody>
-                  </Table>
-              </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
     </div>
