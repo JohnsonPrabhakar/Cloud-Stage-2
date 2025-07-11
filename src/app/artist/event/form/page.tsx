@@ -152,20 +152,24 @@ export default function EventForm({ eventId }: { eventId?: string }) {
     const videoId = getYoutubeVideoId(data.streamUrl);
     
     if (isEditMode && eventId) {
-        const updatedEvent = {
-            id: eventId,
-            ...data,
-            date: combinedDateTime.toISOString(),
-            artist: currentArtist.name,
-            artistEmail: user.email,
-            status: 'Pending' as const, // Reset status on edit
-            bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-        };
-        updateEvent(updatedEvent);
-        toast({
-            title: "Event Updated!",
-            description: "Your event has been resubmitted for approval.",
-        });
+        const eventToUpdate = events.find(e => e.id === eventId);
+        if (eventToUpdate) {
+            const updatedEvent = {
+                ...eventToUpdate,
+                ...data,
+                id: eventId,
+                date: combinedDateTime.toISOString(),
+                artist: currentArtist.name,
+                artistEmail: user.email,
+                status: 'Pending' as const, // Reset status on edit
+                bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            };
+            updateEvent(updatedEvent);
+            toast({
+                title: "Event Updated!",
+                description: "Your event has been resubmitted for approval.",
+            });
+        }
     } else {
         const newEvent = {
             id: new Date().getTime().toString(),
@@ -175,6 +179,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
             artistEmail: user.email,
             status: 'Pending' as const,
             bannerUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            isBoosted: false
         };
         addEvent(newEvent);
         toast({
@@ -296,7 +301,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <FormItem>
                         <FormLabel>Date & Time</FormLabel>
-                        <div className="flex gap-2 items-center">
+                        <div className="flex gap-2 items-start">
                             <FormField
                             control={form.control}
                             name="date"
@@ -307,10 +312,10 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                                     <FormControl>
                                         <Button
                                         variant={"outline"}
-                                        className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                                        className={cn("w-full justify-start text-left font-normal", !field.value && "text-muted-foreground")}
                                         >
+                                        <CalendarIcon className="mr-2 h-4 w-4" />
                                         {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
-                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                         </Button>
                                     </FormControl>
                                     </PopoverTrigger>
@@ -346,7 +351,6 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                                 <Input type="number" placeholder="Enter 0 for a free event" {...field} disabled={!isVerified} />
                             </FormControl>
                             {!isVerified && <FormMessage>Ticket pricing is available for verified artists only.</FormMessage>}
-                            <FormMessage />
                             </FormItem>
                         )}
                     />
