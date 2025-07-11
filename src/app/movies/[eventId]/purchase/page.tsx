@@ -14,7 +14,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { Calendar, CreditCard, Mic, Tag } from 'lucide-react';
+import { Calendar, CreditCard, Mic, Tag, ArrowLeft } from 'lucide-react';
 
 const purchaseFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -75,6 +75,10 @@ export default function PurchasePage() {
       <Header />
       <main className="container py-8 md:py-12 px-4 md:px-6">
         <div className="max-w-2xl mx-auto">
+          <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+          </Button>
           <Card>
             <CardHeader>
               <CardTitle className="font-headline text-3xl">Confirm Your Ticket</CardTitle>
@@ -136,7 +140,7 @@ export default function PurchasePage() {
                     </div>
                     <Button type="submit" className="w-full text-lg py-6 bg-primary" disabled={isProcessing}>
                         <CreditCard className="mr-2"/>
-                        {isProcessing ? 'Processing Payment...' : (event.ticketPrice > 0 ? `Pay $${event.ticketPrice} & Confirm` : 'Confirm Free Ticket')}
+                        {isProcessing ? 'Processing Payment...' : (event.ticketPrice > 0 ? `Pay $${event.ticketPrice}` : 'Confirm Free Ticket')}
                     </Button>
                 </form>
               </Form>

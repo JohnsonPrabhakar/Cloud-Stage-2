@@ -8,7 +8,7 @@ import { getYoutubeVideoId } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle } from 'lucide-react';
+import { Calendar, Clock, Mic, Tag, Ticket, PlayCircle, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import Header from '@/components/layout/Header';
 
@@ -42,6 +42,10 @@ export default function EventDetailPage() {
     <Header/>
     <main className="container py-8 md:py-12 px-4 md:px-6">
       <div className="max-w-4xl mx-auto">
+        <Button variant="ghost" onClick={() => router.back()} className="mb-4">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+        </Button>
         <Card className="overflow-hidden">
           <CardHeader className="p-0">
              {!canWatch && (
