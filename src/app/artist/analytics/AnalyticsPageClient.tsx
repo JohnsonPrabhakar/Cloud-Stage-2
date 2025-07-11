@@ -9,6 +9,7 @@ import { useTickets } from '@/hooks/useTickets';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Users } from 'lucide-react';
+import type { Artist } from '@/lib/types';
 
 const formatCurrency = (value: number) => `$${value.toLocaleString()}`;
 const formatNumber = (value: number) => value.toLocaleString();
@@ -19,14 +20,13 @@ export default function ArtistAnalyticsPageClient() {
     const { artists } = useArtists();
     const { purchasedTickets } = useTickets();
 
-    const currentArtist = useMemo(() => artists.find(a => a.email === user?.email), [artists, user?.email]);
-    
-    const artistEvents = useMemo(() => {
-        if (!user?.email) return [];
-        return events.filter(e => e.artistEmail === user.email);
-    }, [events, user?.email]);
+    const currentArtist = artists.find((a: Artist) => a.email === user?.email);
 
     const analyticsData = useMemo(() => {
+        if (!currentArtist) return [];
+        
+        const artistEvents = events.filter(e => e.artistEmail === currentArtist.email);
+        
         return artistEvents.map(event => {
             const ticketsForEvent = purchasedTickets.filter(t => t.eventId === event.id);
             const revenue = ticketsForEvent.length * event.ticketPrice;
@@ -38,7 +38,15 @@ export default function ArtistAnalyticsPageClient() {
                 attendees: ticketsForEvent.length,
             };
         });
-    }, [artistEvents, purchasedTickets]);
+    }, [currentArtist, events, purchasedTickets]);
+
+    if (!currentArtist) {
+        return (
+            <div className="flex h-[60vh] items-center justify-center">
+                <p>Loading analytics...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -52,7 +60,7 @@ export default function ArtistAnalyticsPageClient() {
                 <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="md:col-span-1 flex flex-col items-center justify-center bg-muted p-6 rounded-lg">
                         <p className="text-lg text-muted-foreground">Total Followers</p>
-                        <p className="text-6xl font-bold">{currentArtist?.followers.length ?? 0}</p>
+                        <p className="text-6xl font-bold">{currentArtist.followers.length}</p>
                     </div>
                     <div className="md:col-span-2">
                          <h3 className="font-semibold mb-2 text-muted-foreground">Followers List</h3>
@@ -64,7 +72,7 @@ export default function ArtistAnalyticsPageClient() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {currentArtist?.followers && currentArtist.followers.length > 0 ? (
+                                    {currentArtist.followers.length > 0 ? (
                                         currentArtist.followers.map((followerEmail, index) => (
                                             <TableRow key={index}>
                                                 <TableCell>{followerEmail}</TableCell>
