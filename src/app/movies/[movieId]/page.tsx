@@ -22,12 +22,16 @@ export default function MovieDetailPage() {
       const foundMovie = movies.find(m => m.id === movieId);
       setMovie(foundMovie);
       setLoading(false);
-    } else if (movies.length === 0 && !loading) {
-      // If movies are loaded and empty, and we are not loading, the movie isn't found
+    } else if (movies.length > 0 && !loading) {
+      // If movies are loaded, but movie not found
       setLoading(false);
+    } else if (movies.length === 0 && !loading) {
+        // If movies are loaded and empty, and we are not loading, the movie isn't found
+        setLoading(false);
     }
     // Added dependency on `loading` to handle initial state correctly.
   }, [movies, movieId, loading]);
+
 
   if (loading) {
      return (
