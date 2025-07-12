@@ -15,7 +15,7 @@ import type { Event, Artist } from '@/lib/types';
 import { getYoutubeVideoId } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, Mic, Ticket, Play, ArrowLeft, ThumbsUp, Heart, PowerOff, Share2, UserPlus, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -140,7 +140,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                             </DialogTrigger>
                             <DialogContent className="max-w-md">
                                <DialogHeader>
-                                <DialogTitle className="sr-only">Artist Profile</DialogTitle>
+                                <DialogTitle className="sr-only">Artist Profile: {artist.name}</DialogTitle>
                                 <DialogDescription className="sr-only">Profile for {artist.name}</DialogDescription>
                               </DialogHeader>
                               <ArtistProfileCard artist={artist} />
