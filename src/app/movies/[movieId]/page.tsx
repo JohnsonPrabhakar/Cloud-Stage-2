@@ -1,18 +1,8 @@
 
-'use client';
-
-import { useParams } from 'next/navigation';
-import Header from '@/components/layout/Header';
 import MovieDetailClient from './MovieDetailClient';
 
-export default function MovieDetailPage() {
-  const params = useParams();
-  const movieId = params.movieId as string;
+export default function MovieDetailPage({ params }: { params: { movieId: string } }) {
+  const { movieId } = params;
 
-  return (
-    <>
-      <Header />
-      <MovieDetailClient movieId={movieId} />
-    </>
-  );
+  return <MovieDetailClient movieId={movieId} />;
 }
