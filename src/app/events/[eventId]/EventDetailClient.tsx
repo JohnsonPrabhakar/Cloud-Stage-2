@@ -213,8 +213,10 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                     </DialogTrigger>
                                     <DialogContent className="max-w-md">
                                         <DialogHeader>
-                                            <DialogTitle className="sr-only">Artist Profile: {artist.name}</DialogTitle>
-                                            <DialogDescription className="sr-only">Profile for {artist.name}</DialogDescription>
+                                            <DialogTitle>Artist Profile: {artist.name}</DialogTitle>
+                                            <DialogDescription>
+                                                Learn more about {artist.name}.
+                                            </DialogDescription>
                                         </DialogHeader>
                                         <ArtistProfileCard artist={artist} />
                                     </DialogContent>
