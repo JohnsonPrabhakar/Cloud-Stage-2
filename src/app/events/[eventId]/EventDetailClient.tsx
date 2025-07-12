@@ -250,7 +250,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         <CardTitle>Interaction</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-2">
-                        {artist && !isEventOwner && (
+                        {user && artist && !isEventOwner && (
                             <Button variant="outline" onClick={handleFollow}>
                                 {isFollowing ? <UserCheck className="mr-2" /> : <UserPlus className="mr-2" />}
                                 {isFollowing ? 'Following' : `Follow ${artist.artistType === 'Band' ? 'Band' : 'Artist'}`}
@@ -318,5 +318,3 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
     </main>
   );
 }
-
-    
