@@ -224,7 +224,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                             )}
                         </div>
                          <div className="flex-shrink-0 flex items-center gap-2">
-                           {user && !isEventOwner && artist && (
+                           {user && artist && !isEventOwner && (
                                 <Button onClick={handleFollowToggle} variant={isFollowing ? 'secondary' : 'default'}>
                                     {isFollowing ? <><Check className="mr-2"/> Following</> : <><UserPlus className="mr-2"/>Follow Artist</>}
                                 </Button>
