@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getYoutubeVideoId } from '@/lib/utils';
@@ -9,11 +10,29 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft } from 'lucide-react';
+import { useMovies } from '@/hooks/useMovies';
 
-export default function MovieDetailClient({ movie }: { movie: Movie | undefined }) {
+export default function MovieDetailClient({ movieId }: { movieId: string }) {
   const router = useRouter();
+  const { movies } = useMovies();
+  const [movie, setMovie] = useState<Movie | undefined | null>(undefined); // undefined: loading, null: not found
 
-  if (!movie) {
+  useEffect(() => {
+    if (movies.length > 0) {
+      const foundMovie = movies.find(m => m.id === movieId);
+      setMovie(foundMovie || null); // Set to null if not found
+    }
+  }, [movies, movieId]);
+
+  if (movie === undefined) {
+    return (
+      <div className="container py-12 text-center">
+        <p>Loading movie...</p>
+      </div>
+    );
+  }
+
+  if (movie === null) {
     return (
         <div className="container py-12 text-center">
             <h1 className="text-2xl font-bold">Movie not found</h1>
