@@ -16,7 +16,7 @@ import { useArtists } from '@/hooks/useArtists';
 import { useAuth } from '@/hooks/useAuth';
 import { useEvents } from '@/hooks/useEvents';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -217,7 +217,13 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                         <DialogTrigger asChild>
                                             <span className="font-semibold text-primary cursor-pointer hover:underline">{event.artist}</span>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-md">
+                                        <DialogContent className="max-w-md p-0">
+                                            <DialogHeader className="p-4 pb-0">
+                                                <DialogTitle>{artist.name}</DialogTitle>
+                                                <DialogDescription>
+                                                   Artist Profile
+                                                </DialogDescription>
+                                            </DialogHeader>
                                            <ArtistProfileCard artist={artist} />
                                         </DialogContent>
                                     </Dialog>
@@ -312,3 +318,5 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
     </main>
   );
 }
+
+    

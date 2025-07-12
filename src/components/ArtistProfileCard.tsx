@@ -9,14 +9,14 @@ import { Separator } from './ui/separator';
 
 export function ArtistProfileCard({ artist }: { artist: Artist }) {
     return (
-        <div className="flex flex-col items-center text-center gap-4 p-4">
+        <div className="flex flex-col items-center text-center gap-4 p-4 pt-0">
             <Avatar className="w-24 h-24 rounded-full border-2 border-primary">
                 <AvatarImage src={artist.profilePictureUrl} alt={artist.name} />
                 <AvatarFallback>{artist.name.charAt(0)}</AvatarFallback>
             </Avatar>
             
             <div className="space-y-1">
-                <h2 className="text-2xl font-headline font-bold">{artist.name}</h2>
+                <h2 className="text-2xl font-headline font-bold sr-only">{artist.name}</h2>
                 <div className="text-muted-foreground flex items-center justify-center gap-4">
                     <div className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {artist.location}</div>
                     <div className="flex items-center gap-1"><Tag className="w-4 h-4" /> {artist.category}</div>
@@ -46,3 +46,5 @@ export function ArtistProfileCard({ artist }: { artist: Artist }) {
         </div>
     );
 }
+
+    
