@@ -6,15 +6,19 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { LayoutDashboard, BarChart2, User, Film, Users, Menu, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, BarChart2, User, Film, Users, Menu, ShieldCheck, Power, PowerOff } from 'lucide-react';
 import { useArtists } from '@/hooks/useArtists';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useAppStatus } from '@/hooks/useAppStatus';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 function AdminHeader() {
     const { logout } = useAuth();
     const [isSheetOpen, setSheetOpen] = useState(false);
     const { artists, verificationRequests } = useArtists();
+    const { isOnline, toggleAppStatus, isLoading: isStatusLoading } = useAppStatus();
 
     const pendingArtistCount = artists.filter(a => a.status === 'Pending').length;
     const pendingVerificationCount = verificationRequests.filter(r => r.status === 'Pending').length;
@@ -36,6 +40,23 @@ function AdminHeader() {
             </Link>
         </Button>
     );
+    
+    const AppStatusToggle = () => (
+      <div className="flex items-center space-x-2">
+        <Switch
+            id="app-status"
+            checked={isOnline}
+            onCheckedChange={toggleAppStatus}
+            disabled={isStatusLoading}
+            aria-label="Toggle application online status"
+        />
+        <Label htmlFor="app-status" className="flex items-center gap-2 font-medium">
+            {isOnline ? <Power className="text-green-500" /> : <PowerOff className="text-red-500" />}
+            {isOnline ? 'Online' : 'Offline'}
+        </Label>
+      </div>
+    );
+
 
     return (
         <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -59,7 +80,8 @@ function AdminHeader() {
                                 <nav className="flex flex-col gap-2 p-4">
                                     {navLinks.map(link => renderNavLink(link, true))}
                                 </nav>
-                                <div className="mt-auto p-4">
+                                <div className="mt-auto p-4 space-y-4">
+                                    <AppStatusToggle />
                                     <Button variant="ghost" className="w-full justify-start gap-2" onClick={() => { logout(); setSheetOpen(false); }}>
                                         <User />Logout
                                     </Button>
@@ -79,7 +101,8 @@ function AdminHeader() {
                          </Button>
                     ))}
                 </nav>
-                <div className="hidden md:flex items-center space-x-2 ml-auto">
+                <div className="hidden md:flex items-center space-x-4 ml-auto">
+                    <AppStatusToggle />
                     <Button variant="ghost" onClick={logout}><User className="mr-2"/>Logout</Button>
                 </div>
             </div>

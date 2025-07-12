@@ -10,7 +10,7 @@ import type { Event } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Mic, Tag, Ticket, ArrowLeft, UserPlus, UserCheck, ThumbsUp, Star, Share2, LogOut, Send, Play } from 'lucide-react';
+import { Calendar, Clock, Mic, Tag, Ticket, ArrowLeft, UserPlus, UserCheck, ThumbsUp, Star, Share2, LogOut, Send, Play, PowerOff } from 'lucide-react';
 import { format } from 'date-fns';
 import { useArtists } from '@/hooks/useArtists';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { useAppStatus } from '@/hooks/useAppStatus';
 
 interface ChatMessage {
   id: number;
@@ -37,6 +38,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+  const { isOnline } = useAppStatus();
 
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
@@ -57,6 +59,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   
   const artist = artists.find(a => a.email === event.artistEmail);
   const isFollowing = !!user && !!artist && artist.followers.includes(user.email);
+  const isEventOwner = user?.email === artist?.email;
 
   const handleFollow = () => {
       if (!user) {
@@ -74,6 +77,10 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   };
 
   const handleWatchNow = () => {
+      if (!isOnline) {
+          toast({ variant: "destructive", title: "App is Offline", description: "The platform is currently offline. Please try again later." });
+          return;
+      }
       if (!user) {
           sessionStorage.setItem('redirectToAfterLogin', pathname);
           router.push('/user-login');
@@ -149,7 +156,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
             <div className="lg:col-span-2">
                 <Card className="overflow-hidden">
                     <CardHeader className="p-0">
-                        {canWatch && embedUrl ? (
+                        {canWatch && embedUrl && isOnline ? (
                             <div className="aspect-video bg-black">
                                 <iframe
                                     width="100%"
@@ -170,9 +177,17 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                     data-ai-hint="event hero"
                                 />
                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                    <Button size="lg" onClick={handleWatchNow}>
-                                        <Play className="mr-2"/> Watch Now
-                                    </Button>
+                                    {isOnline ? (
+                                        <Button size="lg" onClick={handleWatchNow}>
+                                            <Play className="mr-2"/> Watch Now
+                                        </Button>
+                                    ) : (
+                                        <div className="text-center text-white p-4 bg-black/50 rounded-lg">
+                                            <PowerOff className="mx-auto h-12 w-12 mb-2" />
+                                            <h2 className="text-xl font-bold font-headline">App is Currently Offline</h2>
+                                            <p className="text-sm text-foreground/80">Please check back later.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -183,7 +198,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                 <Badge variant="secondary" className="mb-4">{event.category}</Badge>
                                 <CardTitle className="text-3xl md:text-4xl font-headline">{event.title}</CardTitle>
                             </div>
-                            {!canWatch && (
+                            {!canWatch && isOnline && (
                                 <Button onClick={() => router.push(`/events/${event.id}/purchase`)}>
                                     <Ticket className="mr-2"/>
                                     {event.ticketPrice > 0 ? `Buy Ticket - $${event.ticketPrice}` : 'Get Free Ticket'}
@@ -212,7 +227,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         <CardTitle>Interaction</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-wrap gap-2">
-                        {artist && user?.email !== artist.email && (
+                        {artist && !isEventOwner && (
                             <Button variant="outline" onClick={handleFollow}>
                                 {isFollowing ? <UserCheck className="mr-2" /> : <UserPlus className="mr-2" />}
                                 {isFollowing ? 'Following' : `Follow ${artist.artistType === 'Band' ? 'Band' : 'Artist'}`}
@@ -266,11 +281,12 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                 value={chatInput} 
                                 onChange={e => setChatInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleSendChatMessage()}
-                                disabled={!user}
+                                disabled={!user || !isOnline}
                             />
-                            <Button onClick={handleSendChatMessage} disabled={!user}><Send/></Button>
+                            <Button onClick={handleSendChatMessage} disabled={!user || !isOnline}><Send/></Button>
                         </div>
                         {!user && <p className="text-xs text-muted-foreground text-center">Please <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/user-login')}>log in</Button> to chat.</p>}
+                         {!isOnline && <p className="text-xs text-destructive text-center">Chat is disabled while the app is offline.</p>}
                     </CardContent>
                 </Card>
             </aside>

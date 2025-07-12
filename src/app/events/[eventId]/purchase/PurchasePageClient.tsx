@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -13,7 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { Ticket, Calendar, Clock, Mic, ArrowLeft, Loader2, CreditCard, ShieldCheck } from 'lucide-react';
+import { Ticket, Calendar, Clock, Mic, ArrowLeft, Loader2, CreditCard, ShieldCheck, PowerOff } from 'lucide-react';
+import { useAppStatus } from '@/hooks/useAppStatus';
 
 
 export default function PurchasePageClient({ eventId }: { eventId: string }) {
@@ -22,6 +24,7 @@ export default function PurchasePageClient({ eventId }: { eventId: string }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const { purchaseTicket } = useTickets();
+  const { isOnline } = useAppStatus();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const event = events.find(e => e.id === eventId);
@@ -43,6 +46,11 @@ export default function PurchasePageClient({ eventId }: { eventId: string }) {
   }
 
   const handlePurchase = () => {
+    if (!isOnline) {
+        toast({variant: "destructive", title: "App is Offline", description: "Purchases are temporarily disabled."});
+        return;
+    }
+
     if (!user) {
         toast({variant: "destructive", title: "Authentication Error", description: "You must be logged in to purchase a ticket."});
         return;
@@ -105,14 +113,24 @@ export default function PurchasePageClient({ eventId }: { eventId: string }) {
             
           </CardContent>
             <CardFooter className="flex-col gap-4">
-                <Button onClick={handlePurchase} className="w-full" disabled={isProcessing}>
-                    {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2"/>}
-                    {isProcessing ? 'Processing...' : (event.ticketPrice > 0 ? 'Proceed to Checkout' : 'Get Free Ticket')}
-                </Button>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <ShieldCheck className="h-4 w-4 text-green-500" />
-                    <span>Secure and Encrypted Payment</span>
+              {isOnline ? (
+                <>
+                  <Button onClick={handlePurchase} className="w-full" disabled={isProcessing}>
+                      {isProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2"/>}
+                      {isProcessing ? 'Processing...' : (event.ticketPrice > 0 ? 'Proceed to Checkout' : 'Get Free Ticket')}
+                  </Button>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <ShieldCheck className="h-4 w-4 text-green-500" />
+                      <span>Secure and Encrypted Payment</span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center text-destructive p-4 bg-destructive/10 rounded-lg w-full">
+                    <PowerOff className="mx-auto h-8 w-8 mb-2" />
+                    <h3 className="font-bold">Purchases Offline</h3>
+                    <p className="text-sm">The app is currently offline. Please try again later.</p>
                 </div>
+              )}
             </CardFooter>
         </Card>
       </main>

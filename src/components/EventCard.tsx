@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
@@ -6,9 +7,10 @@ import type { Event, EventCategory } from '@/lib/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Music, Mic, Wand2, Leaf, MessageSquare, Wrench, Sparkles, Tag, Ticket, Play } from 'lucide-react';
+import { Calendar, Music, Mic, Wand2, Leaf, MessageSquare, Wrench, Sparkles, Tag, Ticket, Play, PowerOff } from 'lucide-react';
 import { useTickets } from '@/hooks/useTickets';
 import { useAuth } from '@/hooks/useAuth';
+import { useAppStatus } from '@/hooks/useAppStatus';
 
 const categoryIcons: Record<EventCategory, React.ElementType> = {
   "Music": Music,
@@ -33,6 +35,7 @@ export function EventCard({ event, children }: { event: Event; children?: React.
   const Icon = categoryIcons[event.category] || Tag;
   const { user } = useAuth();
   const { hasTicket } = useTickets();
+  const { isOnline } = useAppStatus();
   const hasPurchased = hasTicket(event.id, user?.email);
 
   const isViewable = event.status === 'Live' || event.status === 'Upcoming' || event.status === 'Past' || event.status === 'Approved';
@@ -75,13 +78,18 @@ export function EventCard({ event, children }: { event: Event; children?: React.
       <CardFooter className="p-4 pt-0">
         {children ? children : (
             <>
-                {isViewable && (
+                {isViewable && isOnline && (
                     <Button asChild className="w-full">
                         <Link href={`/events/${event.id}`}>
                           { hasPurchased || event.ticketPrice === 0 ? <><Play className="mr-2 h-4 w-4"/>Watch Now</> : <><Ticket className="mr-2 h-4 w-4" />Get Ticket</> }
                         </Link>
                     </Button>
                 )}
+                 {isViewable && !isOnline && (
+                    <Button disabled className="w-full" variant="outline">
+                      <PowerOff className="mr-2 h-4 w-4" /> App Offline
+                    </Button>
+                 )}
             </>
         )}
       </CardFooter>
