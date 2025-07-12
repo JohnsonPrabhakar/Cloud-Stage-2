@@ -17,21 +17,14 @@ export default function MovieDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // We need to handle the case where movies are not yet loaded from localStorage
-    if (movies.length > 0 && movieId) {
+    if (movies.length > 0) {
       const foundMovie = movies.find(m => m.id === movieId);
       setMovie(foundMovie);
       setLoading(false);
-    } else if (movies.length > 0 && !loading) {
-      // If movies are loaded, but movie not found
-      setLoading(false);
-    } else if (movies.length === 0 && !loading) {
-        // If movies are loaded and empty, and we are not loading, the movie isn't found
-        setLoading(false);
     }
-    // Added dependency on `loading` to handle initial state correctly.
-  }, [movies, movieId, loading]);
-
+    // We keep this check simple. If movies aren't loaded yet, `loading` remains true.
+    // When `movies` populates, this effect re-runs and finds the movie.
+  }, [movies, movieId]);
 
   if (loading) {
      return (
