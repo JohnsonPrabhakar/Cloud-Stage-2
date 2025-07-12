@@ -2,7 +2,6 @@
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Movie } from '@/lib/types';
-import { dummyMovies } from '@/lib/movies';
 
 interface MovieContextType {
   movies: Movie[];
@@ -19,20 +18,14 @@ export function MovieProvider({ children }: { children: ReactNode }) {
     if (storedMovies) {
         try {
             const parsedMovies = JSON.parse(storedMovies);
-            if(Array.isArray(parsedMovies) && parsedMovies.length > 0){
-                setMovies(parsedMovies);
-            } else {
-                 setMovies(dummyMovies);
-                 localStorage.setItem('movies', JSON.stringify(dummyMovies));
-            }
+            setMovies(parsedMovies);
         } catch (error) {
-            console.error("Failed to parse movies from localStorage, using dummy data.", error);
-            setMovies(dummyMovies);
-            localStorage.setItem('movies', JSON.stringify(dummyMovies));
+            console.error("Failed to parse movies from localStorage, initializing as empty.", error);
+            setMovies([]);
         }
     } else {
-        setMovies(dummyMovies);
-        localStorage.setItem('movies', JSON.stringify(dummyMovies));
+        // Initialize with an empty array if nothing is in storage
+        setMovies([]);
     }
   }, []);
 
