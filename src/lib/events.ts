@@ -44,16 +44,7 @@ const generateEvent = (
 
 const now = new Date();
 
-export const dummyEvents: Event[] = [
-    generateEvent('1', 'Acoustic Soul Sessions', 'Elena Vance', 'Music', new Date(now.getTime() - 2 * 60 * 60 * 1000), 'Live', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
-    generateEvent('2', 'Laugh Riot', 'Sammy G', 'Stand-up Comedy', new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=3-M3P3aOa_c'),
-    generateEvent('3', 'Yoga for Peace', 'Anna Z', 'Meditation/Yoga', new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=V7m4g_0Kx_M'),
-    generateEvent('4', 'Tech Horizons', 'Dr. Alex Ray', 'Talk', new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), 'Past', 'https://www.youtube.com/watch?v=vrPzs0I6-mY'),
-    generateEvent('5', 'Mystic Marvels', 'The Great Fantini', 'Magic Show', new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=J3xY8-Uo1Ok'),
-    generateEvent('6', 'The Art of Code', 'Dev Danny', 'Workshop', new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), 'Past', 'https://www.youtube.com/watch?v=k-YY0_O-t7g'),
-    generateEvent('7', 'Rock the Night', 'The Scorchers', 'Music', new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=s_nc1kh-i-A'),
-    generateEvent('8', 'Soulful Chants', 'Harmony Group', 'Devotional', new Date(now.getTime() + 4 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=B7b4F3m3_e0', 'Pending'),
-];
+export const dummyEvents: Event[] = [];
 
 // Centralized function to get an event by ID
 export async function getEventById(eventId: string): Promise<Event | undefined> {
