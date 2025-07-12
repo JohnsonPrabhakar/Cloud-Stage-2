@@ -154,7 +154,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         {isFollowing ? <><Check className="mr-2"/> Following</> : <><UserPlus className="mr-2"/>Follow Artist</>}
                       </Button>
                     )}
-                     {!user && (
+                     {!user && artist && (
                          <Button onClick={() => router.push('/user-login')}>
                             <UserPlus className="mr-2"/> Login to Follow
                         </Button>
@@ -185,7 +185,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                  {isOnline ? (
                     !canWatch && (
                       <Button onClick={handlePurchaseClick} size="lg">
-                        <Ticket className="mr-2" /> Get Ticket {event.ticketPrice > 0 ? `($${event.ticketPrice})` : ''}
+                        <Ticket className="mr-2" /> Get Ticket {event.ticketPrice > 0 ? `$${event.ticketPrice.toFixed(2)}` : ''}
                       </Button>
                     )
                  ) : (
