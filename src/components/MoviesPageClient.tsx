@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -5,33 +6,41 @@ import { useMovies } from '@/hooks/useMovies';
 import { MOVIE_GENRES, MOVIE_LANGUAGES } from '@/lib/movies';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X } from 'lucide-react';
+import { Search, X, Play } from 'lucide-react';
 import Image from 'next/image';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Movie } from '@/lib/types';
+import Link from 'next/link';
 
 function MovieCard({ movie }: { movie: Movie }) {
   return (
     <Card className="w-full flex flex-col h-full overflow-hidden transition-all hover:shadow-lg">
-      <CardHeader className="p-0 relative">
-        <Image
-          src={movie.bannerUrl || 'https://placehold.co/600x400.png'}
-          alt={movie.title}
-          width={600}
-          height={400}
-          className="w-full h-48 object-cover"
-          data-ai-hint="movie banner"
-        />
-      </CardHeader>
-      <CardContent className="p-4 flex-grow flex flex-col">
-        <CardTitle className="text-lg font-headline hover:text-primary transition-colors">{movie.title}</CardTitle>
-        <p className="text-sm text-muted-foreground mt-1 line-clamp-2 flex-grow">{movie.description}</p>
-        <div className="flex items-center text-sm text-muted-foreground mt-4 gap-2 flex-wrap">
-          <Badge variant="secondary">{movie.genre}</Badge>
-          <Badge variant="outline">{movie.language}</Badge>
-        </div>
-      </CardContent>
+      <Link href={`/movies/${movie.id}`} className="block flex flex-col h-full">
+        <CardHeader className="p-0 relative">
+          <Image
+            src={movie.bannerUrl || 'https://placehold.co/600x400.png'}
+            alt={movie.title}
+            width={600}
+            height={400}
+            className="w-full h-48 object-cover"
+            data-ai-hint="movie banner"
+          />
+        </CardHeader>
+        <CardContent className="p-4 flex-grow flex flex-col">
+          <CardTitle className="text-lg font-headline hover:text-primary transition-colors">{movie.title}</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1 line-clamp-2 flex-grow">{movie.description}</p>
+          <div className="flex items-center text-sm text-muted-foreground mt-4 gap-2 flex-wrap">
+            <Badge variant="secondary">{movie.genre}</Badge>
+            <Badge variant="outline">{movie.language}</Badge>
+          </div>
+        </CardContent>
+         <CardFooter className="p-4 pt-0 mt-auto">
+            <Button className="w-full">
+                <Play className="mr-2 h-4 w-4" /> Watch Now
+            </Button>
+        </CardFooter>
+      </Link>
     </Card>
   );
 }
