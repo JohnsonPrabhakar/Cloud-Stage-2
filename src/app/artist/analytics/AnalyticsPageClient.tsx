@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts';
 import { Users, Ticket, DollarSign, BarChart2 } from 'lucide-react';
 import type { Event } from '@/lib/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formatCurrency = (value: number) => `$${value.toLocaleString()}`;
 const formatNumber = (value: number) => value.toLocaleString();
@@ -22,8 +23,9 @@ export default function ArtistAnalyticsPageClient() {
   const { events } = useEvents();
   const { purchasedTickets } = useTickets();
 
-  // Find the artist directly without useMemo to avoid re-render loops
-  const currentArtist = artists.find(a => a.email === user?.email);
+  const currentArtist = useMemo(() => {
+    return artists.find(a => a.email === user?.email);
+  }, [artists, user?.email]);
   
   const analyticsData = useMemo(() => {
     if (!currentArtist) return null;
@@ -38,7 +40,7 @@ export default function ArtistAnalyticsPageClient() {
     
     const totalRevenue = artistEvents.reduce((acc, event) => {
         const ticketsForEvent = artistTickets.filter(t => t.eventId === event.id);
-        return acc + (ticketsForEvent.length * event.ticketPrice);
+        return acc + (ticketsForEvent.length * (event.ticketPrice || 0));
     }, 0);
 
     const eventPerformance = artistEvents.map(event => {
@@ -46,7 +48,7 @@ export default function ArtistAnalyticsPageClient() {
         return {
             name: event.title.length > 20 ? `${event.title.substring(0, 20)}...` : event.title,
             ticketsSold,
-            revenue: ticketsSold * event.ticketPrice,
+            revenue: ticketsSold * (event.ticketPrice || 0),
         };
     }).sort((a, b) => b.revenue - a.revenue);
 
@@ -147,7 +149,8 @@ export default function ArtistAnalyticsPageClient() {
                     <CardTitle>Followers</CardTitle>
                     <CardDescription>A list of your followers.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[350px] overflow-y-auto">
+                <CardContent className="h-[350px]">
+                  <ScrollArea className="h-full">
                     {currentArtist.followers.length > 0 ? (
                         <Table>
                             <TableHeader>
@@ -166,6 +169,7 @@ export default function ArtistAnalyticsPageClient() {
                     ) : (
                         <p className="text-muted-foreground text-center pt-8">You don't have any followers yet.</p>
                     )}
+                  </ScrollArea>
                 </CardContent>
             </Card>
         </div>

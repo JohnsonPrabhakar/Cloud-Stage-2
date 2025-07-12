@@ -16,12 +16,14 @@ import { useArtists } from '@/hooks/useArtists';
 import { useAuth } from '@/hooks/useAuth';
 import { useEvents } from '@/hooks/useEvents';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { useAppStatus } from '@/hooks/useAppStatus';
+import { ArtistProfileCard } from '@/components/ArtistProfileCard';
 
 interface ChatMessage {
   id: number;
@@ -106,7 +108,8 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
               url: window.location.href,
           }).catch(console.error);
       } else {
-          toast({ title: 'Sharing not supported on this browser.'});
+        navigator.clipboard.writeText(window.location.href);
+        toast({ title: 'Link copied to clipboard!'});
       }
   }
   
@@ -207,7 +210,21 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         </div>
                         
                         <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-muted-foreground my-4">
-                            <div className="flex items-center gap-2"><Mic className="w-4 h-4"/><span>{event.artist}</span></div>
+                            <div className="flex items-center gap-2">
+                                <Mic className="w-4 h-4"/>
+                                {artist ? (
+                                    <Dialog>
+                                        <DialogTrigger asChild>
+                                            <span className="font-semibold text-primary cursor-pointer hover:underline">{event.artist}</span>
+                                        </DialogTrigger>
+                                        <DialogContent className="max-w-md">
+                                           <ArtistProfileCard artist={artist} />
+                                        </DialogContent>
+                                    </Dialog>
+                                ) : (
+                                    <span>{event.artist}</span>
+                                )}
+                            </div>
                             <div className="flex items-center gap-2"><Calendar className="w-4 h-4"/><span>{format(eventDate, 'EEEE, MMMM d, yyyy')}</span></div>
                             <div className="flex items-center gap-2"><Clock className="w-4 h-4"/><span>{format(eventDate, 'p')}</span></div>
                         </div>
