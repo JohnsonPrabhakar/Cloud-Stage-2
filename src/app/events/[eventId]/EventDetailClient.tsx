@@ -144,7 +144,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
 
   const hasActiveSubscription = user?.subscription && new Date(user.subscription.expiryDate) > new Date();
   const eventLimitReached = hasActiveSubscription && user.subscription!.eventCount >= 20;
-
+  
   const isEventOwner = user?.email === event.artistEmail;
   const canWatch = hasPurchasedTicket || isEventOwner;
 
@@ -164,8 +164,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   
   const handlePremiumAccess = () => {
       if (!user) return;
-      purchaseTicket(event.id, user.email);
-      incrementEventCount(user.email);
+      purchaseTicket(event.id, user.email, undefined, true);
       toast({ title: "✅ Event Unlocked!", description: "You've used one premium event credit." });
   };
 
