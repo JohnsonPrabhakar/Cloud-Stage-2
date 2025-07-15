@@ -35,6 +35,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
+    const ensureAdminExists = async () => {
+        // This is a simplified check. A more robust system might use a specific document ID for the admin.
+        const adminEmail = "admin@cloudstage.live";
+        const adminDocRef = doc(db, "users", "admin_user_placeholder_uid"); // Use a predictable ID to check
+
+        try {
+            const adminDoc = await getDoc(adminDocRef);
+            if (!adminDoc.exists()) {
+                // Admin does not exist, so create it.
+                // NOTE: This creates a placeholder user in auth. A real app would have a more secure setup process.
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, "admin123");
+                    const firebaseUser = userCredential.user;
+                    
+                    const adminUserData = {
+                        uid: firebaseUser.uid,
+                        name: "Admin",
+                        email: adminEmail,
+                        role: 'admin' as const,
+                        createdAt: serverTimestamp(),
+                    };
+                    
+                    // Use the actual UID for the document now.
+                    await setDoc(doc(db, "users", firebaseUser.uid), adminUserData);
+                    console.log("Default admin account created successfully.");
+                    // Log out the newly created user immediately so they can log in normally.
+                    await signOut(auth);
+                } catch(error: any) {
+                    if (error.code !== 'auth/email-already-in-use') {
+                       console.error("Failed to create default admin:", error);
+                    }
+                    // If email is in use, we assume the user doc exists or will be found by onAuthStateChanged.
+                }
+            }
+        } catch (e) {
+             console.error("Error checking for admin user:", e);
+        }
+    };
+
+    ensureAdminExists();
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userDocRef = doc(db, "users", firebaseUser.uid);
@@ -49,6 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             profilePictureUrl: firebaseUser.photoURL || userData.profilePictureUrl,
             ...userData
           });
+        } else {
+            // This can happen if a user is deleted from Firestore but not Auth
+            setUser(null);
+            await signOut(auth);
         }
       } else {
         setUser(null);
@@ -78,35 +123,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } else {
         await signOut(auth);
-        toast({ variant: "destructive", title: "Login Failed", description: "User data not found." });
+        toast({ variant: "destructive", title: "Login Failed", description: "User data not found. Please contact support." });
       }
     } catch (error: any) {
-      if (error.code === 'auth/invalid-credential' && email === 'admin@cloudstage.live' && pass === 'admin123') {
-        try {
-          const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-          const firebaseUser = userCredential.user;
-          await updateProfile(firebaseUser, { displayName: "Admin" });
-          
-          const adminUserData = {
-            uid: firebaseUser.uid,
-            name: "Admin",
-            email: email,
-            role: 'admin' as const,
-            createdAt: serverTimestamp(),
-          };
-
-          const userDocRef = doc(db, "users", firebaseUser.uid);
-          await setDoc(userDocRef, adminUserData);
-
-          setUser(adminUserData as AuthUser);
-          toast({ title: "Admin Account Created & Logged In", description: "Default admin account has been set up." });
-          router.push('/admin');
-        } catch (creationError: any) {
-           toast({ variant: "destructive", title: "Admin Creation Failed", description: creationError.message });
-        }
-      } else {
-        toast({ variant: "destructive", title: "Login Failed", description: error.message });
-      }
+        console.error("Admin/Artist login error:", error);
+        toast({ variant: "destructive", title: "Login Failed", description: "Invalid credentials or user not found." });
     }
   };
 
