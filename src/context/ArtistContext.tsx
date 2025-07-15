@@ -32,7 +32,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const q = query(collection(db, "users"), where("role", "==", "artist"));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const unsubscribeArtists = onSnapshot(q, (querySnapshot) => {
       const artistsData: Artist[] = [];
       querySnapshot.forEach((doc) => {
         artistsData.push({ id: doc.id, ...doc.data() } as Artist);
@@ -40,20 +40,27 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       setArtists(artistsData);
     });
 
-    const vq = query(collection(db, "verificationRequests"));
-    const unsubscribeVerification = onSnapshot(vq, (querySnapshot) => {
-      const requestsData: VerificationRequest[] = [];
-      querySnapshot.forEach((doc) => {
-        requestsData.push({ id: doc.id, ...doc.data() } as VerificationRequest);
+    let unsubscribeVerification: () => void = () => {};
+
+    // Only fetch verification requests if the user is an admin
+    if (user?.role === 'admin') {
+      const vq = query(collection(db, "verificationRequests"));
+      unsubscribeVerification = onSnapshot(vq, (querySnapshot) => {
+        const requestsData: VerificationRequest[] = [];
+        querySnapshot.forEach((doc) => {
+          requestsData.push({ id: doc.id, ...doc.data() } as VerificationRequest);
+        });
+        setVerificationRequests(requestsData);
       });
-      setVerificationRequests(requestsData);
-    });
+    } else {
+      setVerificationRequests([]); // Clear requests for non-admins
+    }
 
     return () => {
-      unsubscribe();
+      unsubscribeArtists();
       unsubscribeVerification();
     };
-  }, []);
+  }, [user]); // Rerun effect when user changes
 
   const addArtist = async (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'| 'uid'>) => {
     if (!artistData.password) throw new Error("Password is required for artist registration.");
