@@ -68,6 +68,10 @@ h1, h2, h3, h4, h5, h6 {
   body {
     @apply bg-background text-foreground;
   }
+  input[type="time"],
+  input[type="date"] {
+    color-scheme: light;
+  }
 }
 
 .gradient-background {
