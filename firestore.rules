@@ -4,60 +4,74 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions to check user roles from the users collection
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
     function getUserData(userId) {
       return get(/databases/$(database)/documents/users/$(userId)).data;
     }
 
-    function isRole(userId, role) {
-      return request.auth != null && getUserData(userId).role == role;
-    }
-
-    function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
-    }
-    
     function isAdmin() {
-        return isRole(request.auth.uid, 'admin');
+      return isAuthenticated() && getUserData(request.auth.uid).role == 'admin';
     }
 
     function isArtist() {
-        return isRole(request.auth.uid, 'artist');
+      return isAuthenticated() && getUserData(request.auth.uid).role == 'artist';
     }
 
-    // --- COLLECTION RULES ---
+    // Rules for collections
 
-    // Users can be read by anyone, but only modified by themselves or an admin.
     match /users/{userId} {
-      allow list, read: if true; 
-      allow create: if request.auth != null;
-      allow update: if isOwner(userId) || isAdmin();
-      allow delete: if isAdmin();
-    }
-    
-    // Events can be read by anyone, but only created/updated by their owner artist or an admin.
-    match /events/{eventId} {
+      // Allow anyone to read user profiles (for artist lists, etc.)
       allow read: if true;
-      allow create: if isArtist();
-      allow update: if (isArtist() && resource.data.artistId == request.auth.uid) || isAdmin();
+      // Only the user themselves or an admin can update a profile
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    match /events/{eventId} {
+      // Allow anyone to read event data
+      allow read: if true;
+      // Only allow artists or admins to create/update events
+      allow create, update: if isArtist() || isAdmin();
+      // Only allow admins to delete events
       allow delete: if isAdmin();
     }
     
-    // Movies can be read by anyone, but only managed by admins.
     match /movies/{movieId} {
-        allow read: if true;
-        allow create, update, delete: if isAdmin();
+      // Allow anyone to read movie data
+      allow read: if true;
+      // Only admins can create/update/delete movies
+      allow write: if isAdmin();
     }
     
-    // A user can only access their own tickets.
-    match /tickets/{ticketId} {
-        allow read, create: if isOwner(request.resource.data.userId);
-        allow update, delete: if isOwner(resource.data.userId) || isAdmin();
-    }
-    
-    // Verification requests can only be managed by admins.
     match /verificationRequests/{requestId} {
-      allow read, list, create, update, delete: if isAdmin();
+      // Only the artist who created it or an admin can read
+      allow read: if isOwner(resource.data.artistId) || isAdmin();
+      // Only the artist can create it
+      allow create: if isOwner(request.resource.data.artistId);
+      // Only an admin can update it (approve/reject)
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /tickets/{ticketId} {
+      // A user can only access their own tickets
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      // A user can only create a ticket for themselves
+      allow create: if isAuthenticated() && isOwner(request.resource.data.userId);
+      // Tickets cannot be updated or deleted by users
+      allow update, delete: if false;
+    }
+    
+    // Default deny all other collections/paths
+    match /{path=**} {
+      allow read, write: if false;
     }
   }
 }
