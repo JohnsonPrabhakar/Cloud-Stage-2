@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu, User, Ticket, Settings, Star, LogOut } from 'lucide-react';
 import { useTickets } from '@/hooks/useTickets';
 import {
@@ -152,37 +152,40 @@ export default function Header() {
                     </Button>
                     </SheetTrigger>
                     <SheetContent side="right">
-                    <div className="flex flex-col gap-4 p-4">
-                       <SheetClose asChild>
-                            <Link href="/" className="mr-6 flex items-center space-x-2">
-                                <Logo />
-                                <span className="font-bold font-headline">CloudStage</span>
-                            </Link>
-                        </SheetClose>
-                        {navLinks.map(link => (
-                           <SheetClose asChild key={link.href}>
-                            <Link href={link.href} className="text-lg">
-                                {link.label}
-                            </Link>
-                           </SheetClose>
-                        ))}
-                        <hr/>
-                        {user ? (
-                        <>
-                            <SheetClose asChild><Link href="/profile" className="text-lg">Profile</Link></SheetClose>
-                            <SheetClose asChild><Link href="/my-tickets" className="text-lg">My Tickets</Link></SheetClose>
-                             <SheetClose asChild><Link href="/settings" className="text-lg">Settings</Link></SheetClose>
-                            <hr/>
-                            <Button onClick={() => { logout(); }} variant="ghost" className="justify-start">Logout</Button>
-                        </>
-                        ) : (
-                          <>
-                            <SheetClose asChild>
-                                <Button asChild><Link href="/user-login">Login / Sign Up</Link></Button>
+                      <SheetHeader>
+                        <SheetTitle className="sr-only">Mobile Menu</SheetTitle>
+                      </SheetHeader>
+                      <div className="flex flex-col gap-4 p-4">
+                        <SheetClose asChild>
+                              <Link href="/" className="mr-6 flex items-center space-x-2">
+                                  <Logo />
+                                  <span className="font-bold font-headline">CloudStage</span>
+                              </Link>
+                          </SheetClose>
+                          {navLinks.map(link => (
+                            <SheetClose asChild key={link.href}>
+                              <Link href={link.href} className="text-lg">
+                                  {link.label}
+                              </Link>
                             </SheetClose>
+                          ))}
+                          <hr/>
+                          {user ? (
+                          <>
+                              <SheetClose asChild><Link href="/profile" className="text-lg">Profile</Link></SheetClose>
+                              <SheetClose asChild><Link href="/my-tickets" className="text-lg">My Tickets</Link></SheetClose>
+                              <SheetClose asChild><Link href="/settings" className="text-lg">Settings</Link></SheetClose>
+                              <hr/>
+                              <Button onClick={() => { logout(); }} variant="ghost" className="justify-start">Logout</Button>
                           </>
-                        )}
-                    </div>
+                          ) : (
+                            <>
+                              <SheetClose asChild>
+                                  <Button asChild><Link href="/user-login">Login / Sign Up</Link></Button>
+                              </SheetClose>
+                            </>
+                          )}
+                      </div>
                     </SheetContent>
                 </Sheet>
             </div>
