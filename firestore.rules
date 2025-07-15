@@ -1,67 +1,55 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions to check user roles by reading from the users collection
+
     function isAuthenticated() {
       return request.auth != null;
     }
 
     function isUser(userId) {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(userId)).data.role == 'user';
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isArtist(userId) {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(userId)).data.role == 'artist';
+    function getRole(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)).data.role;
     }
 
-    function isAdmin(userId) {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(userId)).data.role == 'admin';
+    function isAdmin() {
+      return isAuthenticated() && getRole(request.auth.uid) == 'admin';
     }
 
-    // Rules for the 'users' collection
+    function isArtist() {
+      return isAuthenticated() && getRole(request.auth.uid) == 'artist';
+    }
+
     match /users/{userId} {
-      // Any authenticated user can read any user's profile (for artist lists, etc.)
       allow read: if isAuthenticated();
-      // Only the user themselves can write to their own document
-      allow write: if request.auth.uid == userId;
+      allow write: if isUser(userId) || isAdmin();
     }
 
-    // Rules for the 'events' collection
     match /events/{eventId} {
-      // Anyone can read event details
       allow read: if true;
-      // Only admins or the artist who owns the event can create/update it
-      allow write: if isAdmin(request.auth.uid) || (isArtist(request.auth.uid) && request.auth.uid == request.resource.data.artistId);
+      allow create: if isArtist();
+      allow update, delete: if (isArtist() && resource.data.artistId == request.auth.uid) || isAdmin();
     }
 
-    // Rules for the 'tickets' collection
     match /tickets/{ticketId} {
-      // A user can only create or read their own tickets
-      allow read, create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+      allow read: if isUser(resource.data.userId);
+      allow create: if isUser(request.resource.data.userId);
     }
 
-    // Rules for the 'movies' collection
     match /movies/{movieId} {
-      // Anyone can read movie details
-      allow read: if true;
-      // Only admins can write movie data
-      allow write: if isAdmin(request.auth.uid);
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
     }
     
-    // Rules for the 'verificationRequests' collection
-    match /verificationRequests/{reqId} {
-        // Only admins can read or write verification requests
-        allow read, write: if isAdmin(request.auth.uid);
-        // Artists can create their own verification requests
-        allow create: if isArtist(request.auth.uid) && request.auth.uid == request.resource.data.artistId;
+    match /verificationRequests/{requestId} {
+      allow read, update: if isAdmin();
+      allow create: if isArtist();
     }
 
-    // Rules for the 'subscriptions' collection
     match /subscriptions/{userId} {
-      // A user can only read or write their own subscription
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow read, write: if isUser(userId);
     }
   }
 }
