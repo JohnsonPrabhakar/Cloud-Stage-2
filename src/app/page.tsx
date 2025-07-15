@@ -74,11 +74,17 @@ const promoSlides = [
         image: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=2062&auto=format&fit=crop",
         hint: "abstract event"
     },
+    {
+        id: 6,
+        title: "Discover Workshops & Learning",
+        image: "https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop",
+        hint: "workshop learning"
+    },
 ];
 
 function HeroCarousel() {
   const plugin = useRef(
-    Autoplay({ delay: 1000, stopOnInteraction: true })
+    Autoplay({ delay: 2000, stopOnInteraction: true })
   )
 
   return (
@@ -96,7 +102,7 @@ function HeroCarousel() {
                 <Image 
                     src={slide.image} 
                     alt={slide.title} 
-                    layout="fill" 
+                    fill
                     className="object-cover" 
                     data-ai-hint={slide.hint}
                 />
@@ -131,9 +137,9 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
-        <section className="w-full py-4">
+        <section className="w-full">
             <div className="container px-4 md:px-6">
-                <div className="flex flex-col items-center space-y-2 text-center">
+                <div className="flex flex-col items-center space-y-2 text-center my-6">
                     <h1 className="text-3xl font-bold font-headline tracking-tighter sm:text-5xl">Welcome to CloudStage</h1>
                     <p className="max-w-[700px] text-muted-foreground md:text-xl">Discover virtual concerts from around the globe.</p>
                 </div>
