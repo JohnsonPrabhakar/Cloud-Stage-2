@@ -15,6 +15,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
     }
     try {
       const item = window.localStorage.getItem(key);
+      // Ensure we don't return null or undefined, which could break destructuring
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
       console.error(`Error reading localStorage key “${key}”:`, error);
@@ -25,23 +26,21 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
-      const stringifiedValue = JSON.stringify(valueToStore);
       
-      // Safeguard against exceeding quota
-      if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
+      if (typeof window !== 'undefined') {
+        const stringifiedValue = JSON.stringify(valueToStore);
+        // Safeguard against exceeding quota
+        if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
            console.error(
-              `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds limit. A large object (like a file) was likely passed unintentionally.`
+              `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds quota. A large object (like a file) was likely passed unintentionally.`
            );
             // Update state in memory but prevent writing to localStorage to avoid crash
            setStoredValue(valueToStore);
            return;
-      }
-
-      setStoredValue(valueToStore);
-
-      if (typeof window !== 'undefined') {
+        }
         window.localStorage.setItem(key, stringifiedValue);
       }
+      setStoredValue(valueToStore);
     } catch (error) {
       console.error(`Error setting localStorage key “${key}”:`, error);
     }
