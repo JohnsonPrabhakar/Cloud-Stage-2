@@ -67,8 +67,8 @@ interface ArtistContextType {
 export const ArtistContext = createContext<ArtistContextType | undefined>(undefined);
 
 export function ArtistProvider({ children }: { children: ReactNode }) {
-  const [artists, setArtists] = useLocalStorage<Artist[]>('artists', dummyArtists);
-  const [verificationRequests, setVerificationRequests] = useLocalStorage<VerificationRequest[]>('verificationRequests', dummyVerificationRequests);
+  const [artists, setArtists] = useLocalStorage<Artist[]>('artists', []);
+  const [verificationRequests, setVerificationRequests] = useLocalStorage<VerificationRequest[]>('verificationRequests', []);
 
   const addArtist = (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'>) => {
     const newArtist: Artist = {

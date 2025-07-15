@@ -20,19 +20,14 @@ export function MovieProvider({ children }: { children: ReactNode }) {
     if (storedMovies) {
         try {
             const parsedMovies = JSON.parse(storedMovies);
-             if(Array.isArray(parsedMovies) && parsedMovies.length > 0){
-                setMovies(parsedMovies);
-            } else {
-                 setMovies(dummyMovies);
-                 localStorage.setItem('movies', JSON.stringify(dummyMovies));
-            }
+            setMovies(parsedMovies);
         } catch (error) {
-            console.error("Failed to parse movies from localStorage, using dummy data.", error);
-            setMovies(dummyMovies);
+            console.error("Failed to parse movies from localStorage, initializing with empty array.", error);
+            setMovies([]);
         }
     } else {
-        setMovies(dummyMovies);
-        localStorage.setItem('movies', JSON.stringify(dummyMovies));
+        // Start with an empty array if no movies are in storage
+        setMovies([]);
     }
   }, []);
 

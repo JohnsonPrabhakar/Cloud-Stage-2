@@ -23,20 +23,14 @@ export function EventProvider({ children }: { children: ReactNode }) {
     if (storedEvents) {
         try {
             const parsedEvents = JSON.parse(storedEvents);
-            if(Array.isArray(parsedEvents) && parsedEvents.length > 0){
-                setEvents(parsedEvents);
-            } else {
-                 setEvents(dummyEvents);
-                 localStorage.setItem('events', JSON.stringify(dummyEvents));
-            }
+            setEvents(parsedEvents);
         } catch (error) {
-            console.error("Failed to parse events from localStorage, using dummy data.", error);
-            setEvents(dummyEvents);
-            localStorage.setItem('events', JSON.stringify(dummyEvents));
+            console.error("Failed to parse events from localStorage, initializing with empty array.", error);
+            setEvents([]);
         }
     } else {
-        setEvents(dummyEvents);
-        localStorage.setItem('events', JSON.stringify(dummyEvents));
+        // Start with an empty array if no events are in storage
+        setEvents([]);
     }
   }, []);
 
