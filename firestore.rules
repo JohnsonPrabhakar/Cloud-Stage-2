@@ -5,74 +5,59 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Helper functions to check user roles from the users collection
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
     function getUserData(userId) {
       return get(/databases/$(database)/documents/users/$(userId)).data;
     }
 
-    function isUser(userId) {
-      return isAuthenticated() && getUserData(userId).role == 'user';
+    function isRole(userId, role) {
+      return request.auth != null && getUserData(userId).role == role;
     }
 
-    function isArtist(userId) {
-      return isAuthenticated() && getUserData(userId).role == 'artist';
+    function isOwner(userId) {
+        return request.auth != null && request.auth.uid == userId;
     }
-
+    
     function isAdmin() {
-      return isAuthenticated() && getUserData(request.auth.uid).role == 'admin';
+        return isRole(request.auth.uid, 'admin');
     }
 
-    // Rules for the 'users' collection
+    function isArtist() {
+        return isRole(request.auth.uid, 'artist');
+    }
+
+    // --- COLLECTION RULES ---
+
+    // Users can be read by anyone, but only modified by themselves or an admin.
     match /users/{userId} {
-      // Anyone can read user profiles (for artist pages, etc.)
-      allow read: if true;
-      // Only a user can update their own document
-      allow update: if request.auth.uid == userId;
-      // A user can create their own document (on registration)
-      allow create: if request.auth.uid == userId;
+      allow list, read: if true; 
+      allow create: if request.auth != null;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
     }
-
-    // Rules for the 'events' collection
+    
+    // Events can be read by anyone, but only created/updated by their owner artist or an admin.
     match /events/{eventId} {
-      // Anyone can read events
       allow read: if true;
-      // Only an authenticated artist can create an event
-      allow create: if isArtist(request.auth.uid);
-      // Only the artist who created the event or an admin can update it
-      allow update: if isAdmin() || request.auth.uid == resource.data.artistId;
+      allow create: if isArtist();
+      allow update: if (isArtist() && resource.data.artistId == request.auth.uid) || isAdmin();
+      allow delete: if isAdmin();
     }
     
-    // Rules for the 'movies' collection
+    // Movies can be read by anyone, but only managed by admins.
     match /movies/{movieId} {
-        // Anyone can read movies
         allow read: if true;
-        // Only admins can add new movies
-        allow create: if isAdmin();
-    }
-
-    // Rules for the 'tickets' collection
-    match /tickets/{ticketId} {
-        // A user can read their own tickets
-        allow read: if request.auth.uid == resource.data.userId;
-        // A user can create their own ticket document
-        allow create: if request.auth.uid == request.resource.data.userId;
+        allow create, update, delete: if isAdmin();
     }
     
-    // Rules for 'verificationRequests'
-    match /verificationRequests/{requestId} {
-        // Only admins can read/write verification requests
-        allow read, write: if isAdmin();
+    // A user can only access their own tickets.
+    match /tickets/{ticketId} {
+        allow read, create: if isOwner(request.resource.data.userId);
+        allow update, delete: if isOwner(resource.data.userId) || isAdmin();
     }
-
-    // Rules for app status (assuming a single document)
-    match /app-status/{statusId} {
-        // Anyone can read the app status
-        allow read: if true;
-        // Only admins can change the app status
-        allow write: if isAdmin();
+    
+    // Verification requests can only be managed by admins.
+    match /verificationRequests/{requestId} {
+      allow read, list, create, update, delete: if isAdmin();
     }
   }
 }

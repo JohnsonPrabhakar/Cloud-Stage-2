@@ -21,15 +21,6 @@ export const UserContext = createContext<UserContextType | undefined>(undefined)
 export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<RegisteredUser[]>([]);
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-        const querySnapshot = await getDocs(collection(db, "users"));
-        const usersData = querySnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}) as RegisteredUser);
-        setUsers(usersData);
-    };
-    fetchUsers();
-  }, []);
-
   const findUserByEmail = (email: string) => users.find(u => u.email === email);
   
   const addUser = async (user: RegisteredUser) => {
