@@ -17,7 +17,7 @@ function EventCarousel({ title, events }: { title: string; events: any[] }) {
     if (events.length === 0) return null;
 
     return (
-        <section className="w-full py-8 md:py-12">
+        <section className="w-full py-6 md:py-8">
             <h2 className="text-2xl font-bold font-headline tracking-tighter sm:text-3xl mb-6">{title}</h2>
             <div className="relative">
                 <ScrollArea>
@@ -49,7 +49,7 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
-        <section className="w-full py-12 md:py-20 lg:py-24">
+        <section className="w-full py-8 md:py-12">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-4 text-center">
                     <h1 className="text-3xl font-bold font-headline tracking-tighter sm:text-5xl">Welcome to CloudStage</h1>
@@ -88,7 +88,7 @@ export default function Home() {
             </div>
         </section>
 
-        <section id="events" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/20">
+        <section id="events" className="w-full py-8 md:py-12 bg-secondary/20">
           <div className="container px-4 md:px-6">
             <EventCarousel title="Live Events" events={liveEvents} />
             <EventCarousel title="Upcoming Events" events={upcomingEvents} />
