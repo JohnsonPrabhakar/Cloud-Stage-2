@@ -2,13 +2,14 @@
 'use client';
 
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useParams } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import PurchasePageClient from './PurchasePageClient';
 import { useEffect } from 'react';
 
-export default function PurchasePage({ params }: { params: { eventId: string } }) {
-  const { eventId } = params;
+export default function PurchasePage() {
+  const params = useParams();
+  const eventId = params.eventId as string;
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
