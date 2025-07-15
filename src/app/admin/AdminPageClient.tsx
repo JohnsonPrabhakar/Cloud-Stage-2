@@ -22,7 +22,7 @@ export default function AdminPageClient() {
 
   const handleReject = (eventId: string) => {
     updateEventStatus(eventId, 'Rejected');
-     toast({ title: 'Event Rejected' });
+     toast({ title: 'Event Rejected', variant: 'destructive' });
   };
 
   return (

@@ -29,6 +29,10 @@ function AdminHeader() {
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VerificationRequest));
             setVerificationRequests(requests);
+        }, (error) => {
+            console.error("Firestore Error (Verification Requests):", error);
+            // This can happen if a non-admin briefly attempts access.
+            // We can choose to handle this silently or with a toast.
         });
         return () => unsubscribe();
     }, [setVerificationRequests]);

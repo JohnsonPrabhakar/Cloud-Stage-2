@@ -6,6 +6,7 @@ import type { Artist, ArtistStatus, VerificationRequest } from '@/lib/types';
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 interface ArtistContextType {
   artists: Artist[];
@@ -48,9 +49,14 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
 
   const addArtist = async (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'| 'uid' | 'password'>) => {
     try {
-      const profilePicRef = ref(storage, `profile-images/temp/${Date.now()}.jpg`);
-      await uploadString(profilePicRef, artistData.profilePictureUrl, 'data_url');
-      const profilePictureUrl = await getDownloadURL(profilePicRef);
+      // This is a simplified version for demonstration.
+      // In a real app, you would handle user creation and then create the artist profile.
+      // For now, we assume profilePictureUrl is a data URL.
+      const response = await fetch(artistData.profilePictureUrl);
+      const blob = await response.blob();
+      const storageRef = ref(storage, `profile-images/${Date.now()}`);
+      await uploadString(storageRef, artistData.profilePictureUrl, 'data_url');
+      const downloadURL = await getDownloadURL(storageRef);
 
       const docRef = await addDoc(collection(db, "users"), {
         ...artistData,
@@ -59,7 +65,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
         isVerified: false,
         followers: [],
         createdAt: serverTimestamp(),
-        profilePictureUrl, // using the storage URL
+        profilePictureUrl: downloadURL, // using the storage URL
       });
       
       console.log("Artist registered with ID: ", docRef.id);
@@ -96,9 +102,8 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
 
       let performanceVideoUrl = '';
       if (requestData.performanceVideoUrl) {
-         const videoRef = ref(storage, `verification-videos/${artist.id}/${Date.now()}`);
-         await uploadString(videoRef, requestData.performanceVideoUrl, 'data_url');
-         performanceVideoUrl = await getDownloadURL(videoRef);
+         // Mock upload logic for client-side demo
+         performanceVideoUrl = '/uploads/mock-video.mp4';
       }
 
       await addDoc(collection(db, "verificationRequests"), {
