@@ -1,23 +1,22 @@
 
 'use client';
 
-import { createContext, useState, useEffect, type ReactNode, useContext } from 'react';
+import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Artist, ArtistStatus, VerificationRequest } from '@/lib/types';
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ArtistContextType {
   artists: Artist[];
-  addArtist: (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers' | 'uid'>) => Promise<void>;
+  addArtist: (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers' | 'uid' | 'password'>) => Promise<void>;
   updateArtist: (updatedArtist: Artist) => Promise<void>;
   updateArtistStatus: (artistId: string, status: ArtistStatus, reason?: string) => Promise<void>;
   followArtist: (artistId: string, userEmail: string) => void;
   unfollowArtist: (artistId: string, userEmail: string) => void;
   
   verificationRequests: VerificationRequest[];
+  setVerificationRequests: (requests: VerificationRequest[]) => void;
   submitVerificationRequest: (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => Promise<void>;
   approveVerification: (artistId: string) => void;
   rejectVerification: (artistId: string, reason: string) => void;
@@ -38,45 +37,17 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
         artistsData.push({ id: doc.id, ...doc.data() } as Artist);
       });
       setArtists(artistsData);
+    }, (error) => {
+        console.error("Error fetching artists:", error);
     });
-
-    let unsubscribeVerification: () => void = () => {};
-
-    // Only fetch verification requests if the user is an admin
-    if (user?.role === 'admin') {
-      const vq = query(collection(db, "verificationRequests"));
-      unsubscribeVerification = onSnapshot(vq, (querySnapshot) => {
-        const requestsData: VerificationRequest[] = [];
-        querySnapshot.forEach((doc) => {
-          requestsData.push({ id: doc.id, ...doc.data() } as VerificationRequest);
-        });
-        setVerificationRequests(requestsData);
-      });
-    } else {
-      setVerificationRequests([]); // Clear requests for non-admins
-    }
-
-
+    
     return () => {
       unsubscribeArtists();
-      unsubscribeVerification();
     };
-  }, [user]); // Rerun effect when user changes
+  }, []);
 
-  const addArtist = async (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'| 'uid'>) => {
-    if (!artistData.password) throw new Error("Password is required for artist registration.");
-    
-    // This is tricky because we need a separate auth instance to not log out the current user
-    // For simplicity, we assume this is a public action. In a real app, this might be an admin function or use a different flow.
-    // This flow is simplified and not secure for production.
+  const addArtist = async (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'| 'uid' | 'password'>) => {
     try {
-      // NOTE: This auth flow for registration is simplified. A real-world scenario
-      // would use a backend function to create users to avoid needing a separate auth instance.
-      // const tempAuth = getAuth(app); // Can't re-initialize
-      // const userCredential = await createUserWithEmailAndPassword(tempAuth, artistData.email, artistData.password);
-      // const firebaseUser = userCredential.user;
-
-      // For this project, we'll add to firestore and assume auth user is created separately or by an admin.
       const profilePicRef = ref(storage, `profile-images/temp/${Date.now()}.jpg`);
       await uploadString(profilePicRef, artistData.profilePictureUrl, 'data_url');
       const profilePictureUrl = await getDownloadURL(profilePicRef);
@@ -169,7 +140,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
   return (
     <ArtistContext.Provider value={{ 
         artists, addArtist, updateArtist, updateArtistStatus, followArtist, unfollowArtist,
-        verificationRequests, submitVerificationRequest, approveVerification, rejectVerification
+        verificationRequests, setVerificationRequests, submitVerificationRequest, approveVerification, rejectVerification
     }}>
       {children}
     </ArtistContext.Provider>

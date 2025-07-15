@@ -13,12 +13,25 @@ import { cn } from '@/lib/utils';
 import { useAppStatus } from '@/hooks/useAppStatus';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { collection, onSnapshot, query } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import type { VerificationRequest } from '@/lib/types';
+
 
 function AdminHeader() {
     const { logout } = useAuth();
     const [isSheetOpen, setSheetOpen] = useState(false);
-    const { artists, verificationRequests } = useArtists();
+    const { artists, verificationRequests, setVerificationRequests } = useArtists();
     const { isOnline, toggleAppStatus, isLoading: isStatusLoading } = useAppStatus();
+    
+    useEffect(() => {
+        const q = query(collection(db, "verificationRequests"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VerificationRequest));
+            setVerificationRequests(requests);
+        });
+        return () => unsubscribe();
+    }, [setVerificationRequests]);
 
     const pendingArtistCount = artists.filter(a => a.status === 'Pending').length;
     const pendingVerificationCount = verificationRequests.filter(r => r.status === 'Pending').length;
