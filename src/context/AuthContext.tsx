@@ -61,29 +61,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginAdminOrArtist = async (email: string, pass: string) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-      const firebaseUser = userCredential.user;
-      
-      const userDocRef = doc(db, "users", firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.role === 'admin' || userData.role === 'artist') {
-          toast({ title: "Login Successful!" });
-          if (userData.role === 'admin') router.push('/admin');
-          if (userData.role === 'artist') router.push('/artist/dashboard');
-        } else {
-          await signOut(auth);
-          toast({ variant: "destructive", title: "Access Denied", description: "This login is for artists and admins only." });
+      await signInWithEmailAndPassword(auth, email, pass);
+      // If login succeeds, proceed as normal
+    } catch (error: any) {
+      // If login fails, check if it's because the user doesn't exist
+      if (error.code === 'auth/user-not-found' && email === 'admin@cloudstage.live' && pass === 'admin123') {
+        // If it's the special admin account, create it
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+          const firebaseUser = userCredential.user;
+          await updateProfile(firebaseUser, { displayName: "Admin" });
+          
+          const userDocRef = doc(db, "users", firebaseUser.uid);
+          await setDoc(userDocRef, {
+            uid: firebaseUser.uid,
+            name: "Admin",
+            email: email,
+            role: 'admin',
+            createdAt: serverTimestamp(),
+          });
+          toast({ title: "Admin Account Created", description: "Default admin account has been set up." });
+        } catch (creationError: any) {
+           toast({ variant: "destructive", title: "Admin Creation Failed", description: creationError.message });
+           return;
         }
       } else {
-         await signOut(auth);
-         toast({ variant: "destructive", title: "Login Failed", description: "User data not found." });
+        toast({ variant: "destructive", title: "Login Failed", description: error.message });
+        return;
       }
+    }
+
+    // Now, sign in again (or for the first time if just created) and redirect
+     try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const firebaseUser = userCredential.user;
+        const userDocRef = doc(db, "users", firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+            const userData = userDoc.data();
+            if (userData.role === 'admin' || userData.role === 'artist') {
+                toast({ title: "Login Successful!" });
+                if (userData.role === 'admin') router.push('/admin');
+                if (userData.role === 'artist') router.push('/artist/dashboard');
+            } else {
+                await signOut(auth);
+                toast({ variant: "destructive", title: "Access Denied", description: "This login is for artists and admins only." });
+            }
+        } else {
+            await signOut(auth);
+            toast({ variant: "destructive", title: "Login Failed", description: "User data not found." });
+        }
     } catch (error: any) {
-      console.error("Login error:", error);
-      toast({ variant: "destructive", title: "Login Failed", description: error.message });
+         toast({ variant: "destructive", title: "Login Failed", description: error.message });
     }
   };
 
