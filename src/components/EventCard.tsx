@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils';
 import type { Event } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 
-export function EventCard({ event, className }: { event: Event; className?: string }) {
+export function EventCard({ event, className, children }: { event: Event; className?: string, children?: React.ReactNode }) {
 
   return (
-    <div className={cn("w-full flex flex-col h-full overflow-hidden transition-all", className)}>
+    <div className={cn("w-full flex flex-col h-full overflow-hidden transition-all border p-4 rounded-lg", className)}>
       <Link href={`/events/${event.id}`} className="block group">
         <div className="relative">
           <Image
@@ -26,10 +26,14 @@ export function EventCard({ event, className }: { event: Event; className?: stri
           <h3 className="text-lg font-headline font-semibold hover:text-primary transition-colors truncate">{event.title}</h3>
           <p className="text-sm text-muted-foreground mt-1 truncate">by {event.artist}</p>
         </Link>
-        <div className="mt-4">
-           <Button asChild className="w-full">
-              <Link href={`/events/${event.id}`}>Get Tickets</Link>
-           </Button>
+        <div className="mt-4 flex-grow flex items-end">
+           {children ? (
+             <div className="w-full">{children}</div>
+           ) : (
+            <Button asChild className="w-full">
+                <Link href={`/events/${event.id}`}>Get Tickets</Link>
+            </Button>
+           )}
         </div>
       </div>
     </div>
