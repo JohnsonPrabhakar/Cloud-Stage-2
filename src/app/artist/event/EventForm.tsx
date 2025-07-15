@@ -11,7 +11,7 @@ import { format } from 'date-fns';
 import { cn, getYoutubeVideoId } from '@/lib/utils';
 import { useEvents } from '@/hooks/useEvents';
 import { useToast } from '@/hooks/use-toast';
-import { EVENT_CATEGORIES } from '@/lib/events';
+import { EVENT_CATEGORIES, EVENT_LANGUAGES } from '@/lib/events';
 import { useAuth } from '@/hooks/useAuth';
 import { useArtists } from '@/hooks/useArtists';
 import { generateEventDescription } from '@/ai/flows/generate-event-description';
@@ -31,7 +31,7 @@ const eventFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters."),
   category: z.enum(EVENT_CATEGORIES, { required_error: "Category is required." }),
   genre: z.string().optional(),
-  language: z.string().optional(),
+  language: z.enum(EVENT_LANGUAGES, { required_error: "Language is required." }),
   date: z.date({ required_error: "Event date is required." }),
   time: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format (HH:MM).").optional(),
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
@@ -224,17 +224,24 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                         </FormItem>
                     )}
                     />
-                 <FormField
+                  <FormField
                     control={form.control}
                     name="language"
                     render={({ field }) => (
-                        <FormItem>
+                      <FormItem>
                         <FormLabel>Language</FormLabel>
-                        <FormControl><Input placeholder="e.g., English" {...field} /></FormControl>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Select a language" /></SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {EVENT_LANGUAGES.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
-                    />
+                  />
             </div>
           </div>
           

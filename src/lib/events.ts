@@ -12,6 +12,15 @@ export const EVENT_CATEGORIES = [
   "Devotional",
 ] as const;
 
+export const EVENT_LANGUAGES = [
+    "English",
+    "Hindi",
+    "Tamil",
+    "Kannada",
+    "Telugu",
+    "Malayalam",
+] as const;
+
 
 const generateEvent = (
   id: string,
@@ -46,22 +55,7 @@ const generateEvent = (
 
 const now = new Date();
 
-export const dummyEvents: Event[] = [
-  generateEvent('live-1', 'Arijit Singh - Live Concert', 'Arijit Singh', 'Music', new Date(now.getTime()), 'Live', 'https://www.youtube.com/watch?v=s5wvoA4jG2s'),
-  generateEvent('live-2', 'Zakir Khan - Haq Se Single', 'Zakir Khan', 'Stand-up Comedy', new Date(now.getTime()), 'Live', 'https://www.youtube.com/watch?v=LqC01G6n2c4'),
-  
-  generateEvent('upcoming-1', 'Sunidhi Chauhan - Rockstars', 'Sunidhi Chauhan', 'Music', new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=YxWlaY4cwJc'),
-  generateEvent('upcoming-2', 'Gaurav Kapoor - Live Standup', 'Gaurav Kapoor', 'Stand-up Comedy', new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=1IWzY61b6hI'),
-  generateEvent('upcoming-3', 'Yoga for Beginners', 'Yoga Guru', 'Meditation/Yoga', new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=sTANio_2E0Q'),
-  generateEvent('upcoming-4', 'Jaya Kishori - Devotional Talk', 'Jaya Kishori', 'Devotional', new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=u5j4_n44B_w'),
-  
-  generateEvent('past-1', 'Shreya Ghoshal - Melodious Night', 'Shreya Ghoshal', 'Music', new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), 'Past', 'https://www.youtube.com/watch?v=BqP0T3i366s'),
-  generateEvent('past-2', 'Anubhav Singh Bassi - Bas Kar Bassi', 'Anubhav Singh Bassi', 'Stand-up Comedy', new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), 'Past', 'https://www.youtube.com/watch?v=tS4QY_gT2gY'),
-  generateEvent('past-3', 'Tech Talk: Future of AI', 'Tech Expert', 'Talk', new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), 'Past', 'https://www.youtube.com/watch?v=6P2nPI6CTlc'),
-
-  generateEvent('pending-1', 'Illusionist Show', 'Magic Master', 'Magic Show', new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'Pending'),
-  generateEvent('rejected-1', 'My First Event', 'New Artist', 'Music', new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000), 'Upcoming', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'Rejected'),
-];
+export const dummyEvents: Event[] = [];
 
 
 // Centralized function to get an event by ID
