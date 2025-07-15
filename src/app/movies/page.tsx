@@ -1,5 +1,5 @@
 import Header from '@/components/layout/Header';
-import MoviesPageClient from '@/components/MoviesPageClient';
+import MoviesPageClient from './MoviesPageClient';
 
 export default function MoviesPage() {
   return (

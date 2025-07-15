@@ -1,10 +1,11 @@
+
 'use client';
 
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, User, Ticket } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from '@/components/ui/sheet';
+import { Menu, User, Ticket, Settings, Star, LogOut } from 'lucide-react';
 import { useTickets } from '@/hooks/useTickets';
 import {
   DropdownMenu,
@@ -72,6 +73,7 @@ export default function Header() {
     { href: '/', label: 'Home' },
     { href: '/events', label: 'Events' },
     { href: '/movies', label: 'Movies' },
+    { href: '/devotional-status', label: 'Daily Status' },
   ];
 
   return (
@@ -92,11 +94,6 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-             {user && userTickets.length > 0 && (
-                 <Link href="/my-tickets" className="text-foreground/60 transition-colors hover:text-foreground/80">
-                    My Tickets
-                </Link>
-             )}
           </nav>
         </div>
 
@@ -120,14 +117,23 @@ export default function Header() {
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                           <Link href={user.role === 'admin' ? '/admin' : user.role === 'artist' ? '/artist/dashboard' : '/my-tickets'}>
-                            {user.role === 'user' ? <Ticket className="mr-2"/> : <User className="mr-2" />}
-                            <span>{user.role === 'user' ? 'My Tickets' : 'Dashboard'}</span>
+                           <Link href={user.role === 'admin' ? '/admin' : user.role === 'artist' ? '/artist/dashboard' : '/profile'}>
+                             <User className="mr-2" /><span>Profile</span>
                            </Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem asChild>
+                           <Link href="/my-tickets"><Ticket className="mr-2"/><span>My Tickets</span></Link>
+                        </DropdownMenuItem>
+                         <DropdownMenuItem asChild>
+                           <Link href="/subscriptions"><Star className="mr-2"/><span>Subscriptions</span></Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                         <DropdownMenuItem asChild>
+                           <Link href="/settings"><Settings className="mr-2"/><span>Settings</span></Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={logout}>
-                           Logout
+                           <LogOut className="mr-2"/><span>Logout</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -148,27 +154,33 @@ export default function Header() {
                     </SheetTrigger>
                     <SheetContent side="right">
                     <div className="flex flex-col gap-4 p-4">
-                        <Link href="/" className="mr-6 flex items-center space-x-2">
-                            <Logo />
-                            <span className="font-bold font-headline">CloudStage</span>
-                        </Link>
+                       <SheetClose asChild>
+                            <Link href="/" className="mr-6 flex items-center space-x-2">
+                                <Logo />
+                                <span className="font-bold font-headline">CloudStage</span>
+                            </Link>
+                        </SheetClose>
                         {navLinks.map(link => (
-                            <Link key={link.href} href={link.href} className="text-lg">
+                           <SheetClose asChild key={link.href}>
+                            <Link href={link.href} className="text-lg">
                                 {link.label}
                             </Link>
+                           </SheetClose>
                         ))}
-                        {user && userTickets.length > 0 && (
-                            <Link href="/my-tickets" className="text-lg">My Tickets</Link>
-                        )}
                         <hr/>
                         {user ? (
                         <>
-                            <Link href={user.role === 'admin' ? '/admin' : '/artist/dashboard'} className="text-lg">Dashboard</Link>
-                            <Button onClick={logout}>Logout</Button>
+                            <SheetClose asChild><Link href="/profile" className="text-lg">Profile</Link></SheetClose>
+                            <SheetClose asChild><Link href="/my-tickets" className="text-lg">My Tickets</Link></SheetClose>
+                             <SheetClose asChild><Link href="/settings" className="text-lg">Settings</Link></SheetClose>
+                            <hr/>
+                            <Button onClick={() => { logout(); }} variant="ghost" className="justify-start">Logout</Button>
                         </>
                         ) : (
                           <>
-                            <Button asChild><Link href="/user-login">Login / Sign Up</Link></Button>
+                            <SheetClose asChild>
+                                <Button asChild><Link href="/user-login">Login / Sign Up</Link></Button>
+                            </SheetClose>
                           </>
                         )}
                     </div>

@@ -17,11 +17,12 @@ import { getYoutubeVideoId } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, Mic, Ticket, Play, ArrowLeft, ThumbsUp, Heart, PowerOff, Share2, UserPlus, Check, LogOut, Send } from 'lucide-react';
+import { Calendar, Clock, Mic, Ticket, Play, ArrowLeft, ThumbsUp, Heart, PowerOff, Share2, UserPlus, Check, LogOut, Send, Bell } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ArtistProfileCard } from '@/components/ArtistProfileCard';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 
 interface ChatMessage {
@@ -104,6 +105,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   
   const [artist, setArtist] = useState<Artist | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
+  const [isReminderSet, setIsReminderSet] = useState(false);
 
   useEffect(() => {
     if (event && artists.length > 0) {
@@ -140,7 +142,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
 
   const handleFollowToggle = () => {
     if (!user || !artist) {
-      toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to follow an artist.' });
+      router.push('/user-login');
       return;
     }
     if (isFollowing) {
@@ -158,6 +160,11 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
       return;
     }
     router.push(`/events/${event.id}/purchase`);
+  };
+
+  const handleSetReminder = () => {
+      setIsReminderSet(true);
+      toast({ title: "Reminder set successfully!", description: `We'll notify you before "${event.title}" starts.` });
   };
 
   return (
@@ -212,24 +219,18 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                     <Button variant="link" className="text-lg text-muted-foreground p-0 h-auto hover:text-primary">by {artist.name}</Button>
                                     </DialogTrigger>
                                     <DialogContent className="max-w-md">
-                                        <DialogHeader>
-                                            <DialogTitle>Artist Profile: {artist.name}</DialogTitle>
-                                            <DialogDescription>
-                                                Learn more about {artist.name}.
-                                            </DialogDescription>
-                                        </DialogHeader>
                                         <ArtistProfileCard artist={artist} />
                                     </DialogContent>
                                 </Dialog>
                             )}
                         </div>
                          <div className="flex-shrink-0 flex items-center gap-2">
-                           {user && artist && !isEventOwner && (
+                           {user && !isEventOwner && artist && (
                                 <Button onClick={handleFollowToggle} variant={isFollowing ? 'secondary' : 'default'}>
                                     {isFollowing ? <><Check className="mr-2"/> Following</> : <><UserPlus className="mr-2"/>Follow Artist</>}
                                 </Button>
                             )}
-                            {!user && artist && (
+                            {!user && (
                                 <Button onClick={() => router.push('/user-login')}>
                                     <UserPlus className="mr-2"/> Login to Follow
                                 </Button>
@@ -240,13 +241,18 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         <div className="flex items-center gap-2"><Calendar className="w-4 h-4"/>{format(eventDate, 'PPP')}</div>
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4"/>{format(eventDate, 'p')}</div>
                         <div className="flex items-center gap-2"><Mic className="w-4 h-4"/>{event.category}</div>
+                         {isReminderSet && <Badge variant="secondary"><Bell className="mr-1.5 h-3 w-3"/>Reminder is set</Badge>}
                     </div>
                     
                     <Separator className="my-6" />
 
-                    <div className="prose max-w-none text-foreground/80">
+                    <div className="prose max-w-none text-foreground/80 mb-6">
                         <p>{event.description}</p>
                     </div>
+
+                    <Button onClick={handleSetReminder} variant="outline" disabled={isReminderSet}>
+                        <Bell className="mr-2"/> {isReminderSet ? "Reminder Set!" : "Set Reminder"}
+                    </Button>
 
                     </CardContent>
                     <CardFooter className="bg-muted/50 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">

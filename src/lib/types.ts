@@ -47,6 +47,7 @@ export type Movie = {
     genre: MovieGenre;
     videoUrl: string;
     bannerUrl: string;
+    durationMinutes?: number;
 }
 
 // Artist Registration Types
