@@ -6,13 +6,13 @@ import { useMovies } from '@/hooks/useMovies';
 import { MOVIE_GENRES, MOVIE_LANGUAGES } from '@/lib/movies';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, X, Play, Film, Languages, ListFilter, Star, CalendarDays } from 'lucide-react';
+import { Search, X, Play, Film, Languages, ListFilter, Star, CalendarDays, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { Movie } from '@/lib/types';
 import Link from 'next/link';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuCheckboxItem } from '@/components/ui/dropdown-menu';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 function MovieCard({ movie }: { movie: Movie }) {
@@ -21,7 +21,7 @@ function MovieCard({ movie }: { movie: Movie }) {
       <Link href={`/movies/${movie.id}`} className="block flex flex-col h-full">
         <CardContent className="p-0 relative">
           <Image
-            src={movie.bannerUrl || 'https://placehold.co/600x400.png'}
+            src={movie.bannerUrl || 'https://placehold.co/600x900.png'}
             alt={movie.title}
             width={600}
             height={400}
@@ -99,8 +99,8 @@ export default function MoviesPageClient() {
             </p>
         </div>
 
-        <div className="mb-8 flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
+        <div className="mb-8 flex flex-col gap-4">
+             <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
                 <div className="relative w-full md:max-w-md">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -111,6 +111,53 @@ export default function MoviesPageClient() {
                     className="w-full pl-10"
                   />
                 </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full md:w-auto">
+                      <Film className="mr-2" />
+                      <span>{selectedGenres.length > 0 ? `${selectedGenres.length} Genre(s)` : 'All Genres'}</span>
+                      <ChevronDown className="ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>Filter by Genre</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {MOVIE_GENRES.map(genre => (
+                      <DropdownMenuCheckboxItem
+                        key={genre}
+                        checked={selectedGenres.includes(genre)}
+                        onCheckedChange={() => toggleFilter(selectedGenres, setSelectedGenres, genre)}
+                      >
+                        {genre}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                 <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full md:w-auto">
+                      <Languages className="mr-2" />
+                      <span>{selectedLanguages.length > 0 ? `${selectedLanguages.length} Language(s)` : 'All Languages'}</span>
+                       <ChevronDown className="ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>Filter by Language</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {MOVIE_LANGUAGES.map(lang => (
+                      <DropdownMenuCheckboxItem
+                        key={lang}
+                        checked={selectedLanguages.includes(lang)}
+                        onCheckedChange={() => toggleFilter(selectedLanguages, setSelectedLanguages, lang)}
+                      >
+                        {lang}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="w-full md:w-auto">
@@ -134,33 +181,6 @@ export default function MoviesPageClient() {
                     </Button>
                 </div>
             )}
-
-            <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold"><Film/> Genres</div>
-                <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex gap-2 pb-4">
-                    {MOVIE_GENRES.map(genre => (
-                      <Button key={genre} size="sm" variant={selectedGenres.includes(genre) ? 'default' : 'outline'} onClick={() => toggleFilter(selectedGenres, setSelectedGenres, genre)}>
-                        {genre}
-                      </Button>
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-            </div>
-            <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-semibold"><Languages/> Languages</div>
-                 <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex gap-2 pb-4">
-                        {MOVIE_LANGUAGES.map(lang => (
-                        <Button key={lang} size="sm" variant={selectedLanguages.includes(lang) ? 'default' : 'outline'} onClick={() => toggleFilter(selectedLanguages, setSelectedLanguages, lang)}>
-                            {lang}
-                        </Button>
-                        ))}
-                    </div>
-                   <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-            </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
