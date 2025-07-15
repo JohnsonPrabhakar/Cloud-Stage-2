@@ -72,6 +72,11 @@ h1, h2, h3, h4, h5, h6 {
   input[type="date"] {
     color-scheme: light;
   }
+  
+  /* Force the calendar and clock icons in date/time inputs to be white */
+  input::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
 }
 
 .gradient-background {
