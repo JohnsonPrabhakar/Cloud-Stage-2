@@ -77,12 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast({ variant: "destructive", title: "Access Denied", description: "This login is for artists and admins only." });
         }
       } else {
-        // This case handles where auth user exists but firestore doc doesn't.
         await signOut(auth);
         toast({ variant: "destructive", title: "Login Failed", description: "User data not found." });
       }
     } catch (error: any) {
-      // If login fails, check if it's the special admin account that needs to be created.
       if (error.code === 'auth/invalid-credential' && email === 'admin@cloudstage.live' && pass === 'admin123') {
         try {
           const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -100,9 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const userDocRef = doc(db, "users", firebaseUser.uid);
           await setDoc(userDocRef, adminUserData);
 
-          // Manually set user state and redirect to avoid race condition
           setUser(adminUserData as AuthUser);
-          toast({ title: "Admin Account Created", description: "Default admin account has been set up." });
+          toast({ title: "Admin Account Created & Logged In", description: "Default admin account has been set up." });
           router.push('/admin');
         } catch (creationError: any) {
            toast({ variant: "destructive", title: "Admin Creation Failed", description: creationError.message });
