@@ -47,31 +47,31 @@ const promoSlides = [
     {
         id: 1,
         title: "Experience the Best of Live Music",
-        image: "https://placehold.co/1200x500/800020/459360?text=Live+Music",
+        image: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b?q=80&w=2070&auto=format&fit=crop",
         hint: "concert crowd"
     },
     {
         id: 2,
         title: "Unmissable Theatre & Comedy Shows",
-        image: "https://placehold.co/1200x500/808000/ffffff?text=Comedy+Shows",
+        image: "https://images.unsplash.com/photo-1504333638930-c8787321e06e?q=80&w=2070&auto=format&fit=crop",
         hint: "theatre stage"
     },
     {
         id: 3,
         title: "Mindful Yoga & Wellness Events",
-        image: "https://placehold.co/1200x500/0088FE/ffffff?text=Wellness",
+        image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2120&auto=format&fit=crop",
         hint: "yoga meditation"
     },
     {
         id: 4,
         title: "Stream Your Favorite Indie Movies",
-        image: "https://placehold.co/1200x500/FF8042/000000?text=Indie+Movies",
+        image: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1925&auto=format&fit=crop",
         hint: "movie projector"
     },
     {
         id: 5,
         title: "Events Curated Just for You",
-        image: "https://placehold.co/1200x500/AF19FF/ffffff?text=For+You",
+        image: "https://images.unsplash.com/photo-1511578314322-379afb476865?q=80&w=2062&auto=format&fit=crop",
         hint: "abstract event"
     },
 ];
@@ -131,7 +131,7 @@ export default function Home() {
     <>
       <Header />
       <main className="flex-1">
-        <section className="w-full py-4 md:py-6">
+        <section className="w-full py-4">
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center space-y-2 text-center">
                     <h1 className="text-3xl font-bold font-headline tracking-tighter sm:text-5xl">Welcome to CloudStage</h1>
@@ -140,7 +140,7 @@ export default function Home() {
             </div>
         </section>
         
-        <section className="w-full pb-6 md:pb-8">
+        <section className="w-full pb-6">
             <div className="container px-4 md:px-6">
                  <HeroCarousel />
             </div>
