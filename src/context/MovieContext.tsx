@@ -3,11 +3,12 @@
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { Movie } from '@/lib/types';
-import { dummyMovies } from '@/lib/movies';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy } from 'firebase/firestore';
 
 interface MovieContextType {
   movies: Movie[];
-  addMovie: (movie: Movie) => void;
+  addMovie: (movie: Omit<Movie, 'id'>) => Promise<void>;
 }
 
 export const MovieContext = createContext<MovieContextType | undefined>(undefined);
@@ -16,30 +17,23 @@ export function MovieProvider({ children }: { children: ReactNode }) {
   const [movies, setMovies] = useState<Movie[]>([]);
 
   useEffect(() => {
-    const storedMovies = localStorage.getItem('movies');
-    if (storedMovies) {
-        try {
-            const parsedMovies = JSON.parse(storedMovies);
-            setMovies(parsedMovies);
-        } catch (error) {
-            console.error("Failed to parse movies from localStorage, initializing with empty array.", error);
-            setMovies([]);
-        }
-    } else {
-        // Start with an empty array if no movies are in storage
-        setMovies([]);
-    }
+    const q = query(collection(db, "movies"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const moviesData: Movie[] = [];
+      querySnapshot.forEach((doc) => {
+        moviesData.push({ id: doc.id, ...doc.data() } as Movie);
+      });
+      setMovies(moviesData);
+    });
+    return () => unsubscribe();
   }, []);
 
-  const updateMoviesInStorage = (updatedMovies: Movie[]) => {
-    setMovies(updatedMovies);
-    localStorage.setItem('movies', JSON.stringify(updatedMovies));
-  };
-
-  const addMovie = (movie: Movie) => {
+  const addMovie = async (movie: Omit<Movie, 'id'>) => {
     const newMovieWithDuration = { ...movie, durationMinutes: movie.durationMinutes || 120 };
-    const updatedMovies = [newMovieWithDuration, ...movies];
-    updateMoviesInStorage(updatedMovies);
+    await addDoc(collection(db, "movies"), {
+      ...newMovieWithDuration,
+      createdAt: serverTimestamp()
+    });
   };
 
   return (

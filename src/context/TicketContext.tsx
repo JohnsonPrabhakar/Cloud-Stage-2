@@ -2,13 +2,14 @@
 'use client';
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
-import type { PurchasedTicket, GuestDetails } from '@/lib/types';
+import type { PurchasedTicket } from '@/lib/types';
 import { useUsers } from './UserContext';
-
+import { db, auth } from '@/lib/firebase';
+import { collection, addDoc, onSnapshot, serverTimestamp, query, where } from 'firebase/firestore';
 
 interface TicketContextType {
   purchasedTickets: PurchasedTicket[];
-  purchaseTicket: (eventId: string, userEmail: string, guestDetails?: GuestDetails, isPremium?: boolean) => void;
+  purchaseTicket: (eventId: string, userEmail: string, isPremium?: boolean) => void;
   hasTicket: (eventId: string, userEmail?: string | null) => boolean;
 }
 
@@ -19,45 +20,43 @@ export function TicketProvider({ children }: { children: ReactNode }) {
   const { incrementEventCount } = useUsers();
 
   useEffect(() => {
-    try {
-      const storedTickets = localStorage.getItem('purchasedTickets');
-      if (storedTickets) {
-        setPurchasedTickets(JSON.parse(storedTickets));
-      }
-    } catch (error) {
-      console.error("Failed to parse tickets from localStorage", error);
-      localStorage.removeItem('purchasedTickets');
+    if (auth.currentUser) {
+      const q = query(collection(db, "tickets"), where("userId", "==", auth.currentUser.uid));
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const ticketsData: PurchasedTicket[] = [];
+        querySnapshot.forEach((doc) => {
+          ticketsData.push({ id: doc.id, ...doc.data() } as PurchasedTicket);
+        });
+        setPurchasedTickets(ticketsData);
+      });
+      return () => unsubscribe();
+    } else {
+        setPurchasedTickets([]);
     }
-  }, []);
+  }, [auth.currentUser]);
 
-  const updateTicketsInStorage = (updatedTickets: PurchasedTicket[]) => {
-    setPurchasedTickets(updatedTickets);
-    localStorage.setItem('purchasedTickets', JSON.stringify(updatedTickets));
-  };
-
-  const purchaseTicket = (eventId: string, userEmail: string, guestDetails?: GuestDetails, isPremium: boolean = false) => {
-    if (hasTicket(eventId, userEmail)) return; // Prevent duplicate tickets
+  const purchaseTicket = async (eventId: string, userEmail: string, isPremium: boolean = false) => {
+    if (!auth.currentUser) return;
+    if (hasTicket(eventId, userEmail)) return;
 
     if(isPremium) {
-        incrementEventCount(userEmail);
+        await incrementEventCount(userEmail);
     }
 
-    const newTicket: PurchasedTicket = {
-        eventId,
-        userEmail,
-        purchaseDate: new Date().toISOString(),
-        guestDetails
-    };
-    const updatedTickets = [...purchasedTickets, newTicket];
-    updateTicketsInStorage(updatedTickets);
+    await addDoc(collection(db, "tickets"), {
+      eventId,
+      userId: auth.currentUser.uid,
+      userEmail,
+      purchaseDate: serverTimestamp(),
+      subscriptionUsed: isPremium,
+    });
   };
 
   const hasTicket = (eventId: string, userEmail?: string | null) => {
     if (userEmail) {
         return purchasedTickets.some(ticket => ticket.eventId === eventId && ticket.userEmail === userEmail);
     }
-    // For guest checkout legacy or checks without user context
-    return purchasedTickets.some(ticket => ticket.eventId === eventId);
+    return false;
   }
 
   return (

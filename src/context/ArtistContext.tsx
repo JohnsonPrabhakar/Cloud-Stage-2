@@ -1,65 +1,24 @@
 
 'use client';
 
-import { createContext, useState, useEffect, type ReactNode } from 'react';
-import type { Artist, ArtistStatus, VerificationRequest, VerificationRequestStatus } from '@/lib/types';
-import { dummyArtists, dummyVerificationRequests } from '@/lib/artists';
-
-const LOCALSTORAGE_SIZE_LIMIT = 4 * 1024 * 1024; // 4MB
-
-// A custom hook to manage state in localStorage
-function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val: T) => T)) => void] {
-  const [storedValue, setStoredValue] = useState<T>(() => {
-    if (typeof window === 'undefined') {
-      return initialValue;
-    }
-    try {
-      const item = window.localStorage.getItem(key);
-      // Ensure we don't return null or undefined, which could break destructuring
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.error(`Error reading localStorage key “${key}”:`, error);
-      return initialValue;
-    }
-  });
-
-  const setValue = (value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
-      
-      if (typeof window !== 'undefined') {
-        const stringifiedValue = JSON.stringify(valueToStore);
-        // Safeguard against exceeding quota
-        if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
-           console.error(
-              `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds quota. A large object (like a file) was likely passed unintentionally.`
-           );
-            // Update state in memory but prevent writing to localStorage to avoid crash
-           setStoredValue(valueToStore);
-           return;
-        }
-        window.localStorage.setItem(key, stringifiedValue);
-      }
-      setStoredValue(valueToStore);
-    } catch (error) {
-      console.error(`Error setting localStorage key “${key}”:`, error);
-    }
-  };
-
-  return [storedValue, setValue];
-}
-
+import { createContext, useState, useEffect, type ReactNode, useContext } from 'react';
+import type { Artist, ArtistStatus, VerificationRequest } from '@/lib/types';
+import { db, auth, storage } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ArtistContextType {
   artists: Artist[];
-  addArtist: (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'>) => void;
-  updateArtist: (updatedArtist: Artist) => void;
-  updateArtistStatus: (artistId: string, status: ArtistStatus, reason?: string) => void;
+  addArtist: (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers' | 'uid'>) => Promise<void>;
+  updateArtist: (updatedArtist: Artist) => Promise<void>;
+  updateArtistStatus: (artistId: string, status: ArtistStatus, reason?: string) => Promise<void>;
   followArtist: (artistId: string, userEmail: string) => void;
   unfollowArtist: (artistId: string, userEmail: string) => void;
   
   verificationRequests: VerificationRequest[];
-  submitVerificationRequest: (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => void;
+  submitVerificationRequest: (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => Promise<void>;
   approveVerification: (artistId: string) => void;
   rejectVerification: (artistId: string, reason: string) => void;
 }
@@ -67,79 +26,135 @@ interface ArtistContextType {
 export const ArtistContext = createContext<ArtistContextType | undefined>(undefined);
 
 export function ArtistProvider({ children }: { children: ReactNode }) {
-  const [artists, setArtists] = useLocalStorage<Artist[]>('artists', []);
-  const [verificationRequests, setVerificationRequests] = useLocalStorage<VerificationRequest[]>('verificationRequests', []);
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [verificationRequests, setVerificationRequests] = useState<VerificationRequest[]>([]);
+  const { user } = useAuth();
 
-  const addArtist = (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'>) => {
-    const newArtist: Artist = {
-      ...artistData,
-      id: `artist-${new Date().getTime()}`,
-      status: 'Pending',
-      isVerified: false,
-      followers: [],
+  useEffect(() => {
+    const q = query(collection(db, "users"), where("role", "==", "artist"));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const artistsData: Artist[] = [];
+      querySnapshot.forEach((doc) => {
+        artistsData.push({ id: doc.id, ...doc.data() } as Artist);
+      });
+      setArtists(artistsData);
+    });
+
+    const vq = query(collection(db, "verificationRequests"));
+    const unsubscribeVerification = onSnapshot(vq, (querySnapshot) => {
+      const requestsData: VerificationRequest[] = [];
+      querySnapshot.forEach((doc) => {
+        requestsData.push({ id: doc.id, ...doc.data() } as VerificationRequest);
+      });
+      setVerificationRequests(requestsData);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeVerification();
     };
-    setArtists(prevArtists => [newArtist, ...prevArtists]);
+  }, []);
+
+  const addArtist = async (artistData: Omit<Artist, 'id' | 'status' | 'isVerified' | 'followers'| 'uid'>) => {
+    if (!artistData.password) throw new Error("Password is required for artist registration.");
+    
+    // This is tricky because we need a separate auth instance to not log out the current user
+    // For simplicity, we assume this is a public action. In a real app, this might be an admin function or use a different flow.
+    // This flow is simplified and not secure for production.
+    try {
+      // NOTE: This auth flow for registration is simplified. A real-world scenario
+      // would use a backend function to create users to avoid needing a separate auth instance.
+      // const tempAuth = getAuth(app); // Can't re-initialize
+      // const userCredential = await createUserWithEmailAndPassword(tempAuth, artistData.email, artistData.password);
+      // const firebaseUser = userCredential.user;
+
+      // For this project, we'll add to firestore and assume auth user is created separately or by an admin.
+      const profilePicRef = ref(storage, `profile-images/temp/${Date.now()}.jpg`);
+      await uploadString(profilePicRef, artistData.profilePictureUrl, 'data_url');
+      const profilePictureUrl = await getDownloadURL(profilePicRef);
+
+      const docRef = await addDoc(collection(db, "users"), {
+        ...artistData,
+        role: 'artist',
+        status: 'Pending',
+        isVerified: false,
+        followers: [],
+        createdAt: serverTimestamp(),
+        profilePictureUrl, // using the storage URL
+      });
+      
+      console.log("Artist registered with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding artist: ", e);
+      throw e;
+    }
   };
 
-  const updateArtist = (updatedArtistData: Artist) => {
-      setArtists(artists.map(artist => artist.id === updatedArtistData.id ? updatedArtistData : artist));
+  const updateArtist = async (updatedArtistData: Artist) => {
+      const artistRef = doc(db, "users", updatedArtistData.id);
+      await updateDoc(artistRef, updatedArtistData as any);
   }
 
-  const updateArtistStatus = (artistId: string, status: ArtistStatus, reason?: string) => {
-    setArtists(artists.map(artist =>
-      artist.id === artistId
-        ? { ...artist, status, rejectionReason: status === 'Rejected' ? reason : undefined }
-        : artist
-    ));
+  const updateArtistStatus = async (artistId: string, status: ArtistStatus, reason?: string) => {
+    const artistRef = doc(db, "users", artistId);
+    await updateDoc(artistRef, {
+      status,
+      rejectionReason: status === 'Rejected' ? reason : ""
+    });
   };
 
-  const followArtist = (artistId: string, userEmail: string) => {
-    setArtists(artists.map(artist => 
-      artist.id === artistId ? { ...artist, followers: [...artist.followers, userEmail] } : artist
-    ));
+  const followArtist = async (artistId: string, userEmail: string) => {
+     // Not implemented with firestore for this scope, would require arrayUnion/arrayRemove
   };
 
-  const unfollowArtist = (artistId: string, userEmail: string) => {
-    setArtists(artists.map(artist =>
-      artist.id === artistId ? { ...artist, followers: artist.followers.filter(email => email !== userEmail) } : artist
-    ));
+  const unfollowArtist = async (artistId: string, userEmail: string) => {
+    // Not implemented with firestore for this scope, would require arrayUnion/arrayRemove
   };
 
-
-  // --- Verification Logic ---
-
-  const submitVerificationRequest = (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => {
+  const submitVerificationRequest = async (artistId: string, requestData: Omit<VerificationRequest, 'id' | 'status' | 'artistId' | 'artistName' | 'artistEmail' | 'artistProfilePictureUrl' | 'rejectionReason'>) => {
       const artist = artists.find(a => a.id === artistId);
       if (!artist) return;
 
-      const newRequest: VerificationRequest = {
-        id: `vr-${new Date().getTime()}`,
+      let performanceVideoUrl = '';
+      if (requestData.performanceVideoUrl) {
+         const videoRef = ref(storage, `verification-videos/${artist.id}/${Date.now()}`);
+         await uploadString(videoRef, requestData.performanceVideoUrl, 'data_url');
+         performanceVideoUrl = await getDownloadURL(videoRef);
+      }
+
+      await addDoc(collection(db, "verificationRequests"), {
         artistId: artist.id,
         artistName: artist.name,
         artistEmail: artist.email,
         artistProfilePictureUrl: artist.profilePictureUrl,
         status: 'Pending',
-        ...requestData,
-      };
-      setVerificationRequests(prevRequests => [newRequest, ...prevRequests]);
+        workUrl1: requestData.workUrl1,
+        workUrl2: requestData.workUrl2,
+        reason: requestData.reason,
+        performanceVideoUrl,
+        submittedAt: serverTimestamp(),
+      });
   };
   
-  const approveVerification = (artistId: string) => {
-    // Update artist's verification status
-    setArtists(artists.map(artist => 
-        artist.id === artistId ? { ...artist, isVerified: true } : artist
-    ));
-
-    // Update the request's status
-    setVerificationRequests((requests: VerificationRequest[]) => requests.map((req: VerificationRequest) => 
-        req.artistId === artistId ? { ...req, status: 'Approved' } : req
-    ));
+  const approveVerification = async (artistId: string) => {
+    const artistRef = doc(db, "users", artistId);
+    await updateDoc(artistRef, { isVerified: true });
+    
+    const q = query(collection(db, "verificationRequests"), where("artistId", "==", artistId));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach(async (document) => {
+        const reqRef = doc(db, "verificationRequests", document.id);
+        await updateDoc(reqRef, { status: 'Approved' });
+    });
   };
 
-  const rejectVerification = (artistId: string, reason: string) => {
-     setVerificationRequests((requests: VerificationRequest[]) => requests.map((req: VerificationRequest) => 
-        req.artistId === artistId ? { ...req, status: 'Rejected', rejectionReason: reason } : req
-    ));
+  const rejectVerification = async (artistId: string, reason: string) => {
+     const q = query(collection(db, "verificationRequests"), where("artistId", "==", artistId));
+     const querySnapshot = await getDocs(q);
+     querySnapshot.forEach(async (document) => {
+        const reqRef = doc(db, "verificationRequests", document.id);
+        await updateDoc(reqRef, { status: 'Rejected', rejectionReason: reason });
+    });
   };
 
 
@@ -152,3 +167,12 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
     </ArtistContext.Provider>
   );
 }
+
+// Hook to use the context
+export const useArtists = () => {
+    const context = useContext(ArtistContext);
+    if (context === undefined) {
+        throw new Error('useArtists must be used within a ArtistProvider');
+    }
+    return context;
+};

@@ -7,7 +7,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
+import { storage, db } from '@/lib/firebase';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
+import { doc, updateDoc } from 'firebase/firestore';
 
 import { useArtists } from '@/hooks/useArtists';
 import { ARTIST_TYPES, ARTIST_CATEGORIES } from '@/lib/artists';
@@ -47,8 +49,9 @@ export default function EditProfilePageClient() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const currentArtist = artists.find(a => a.email === user?.email);
+  const currentArtist = artists.find(a => a.id === user?.uid);
 
   const form = useForm<ArtistFormValues>({
     resolver: zodResolver(artistFormSchema),
@@ -84,20 +87,32 @@ export default function EditProfilePageClient() {
   }, [currentArtist, form]);
 
 
-  function handleProfilePictureUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleProfilePictureUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && user) {
+        setIsUploading(true);
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
         const result = reader.result as string;
         setProfilePreview(result);
-        form.setValue('profilePictureUrl', result, { shouldValidate: true });
+        try {
+            const storageRef = ref(storage, `profile-images/${user.uid}/profile.jpg`);
+            await uploadString(storageRef, result, 'data_url');
+            const downloadURL = await getDownloadURL(storageRef);
+            form.setValue('profilePictureUrl', downloadURL, { shouldValidate: true });
+            toast({ title: 'Profile picture updated!' });
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Upload failed', description: 'Could not upload image.'});
+            console.error(error);
+        } finally {
+            setIsUploading(false);
+        }
       };
-      reader.readAsDataURL(file);
     }
   }
 
-  function onSubmit(data: ArtistFormValues) {
+  async function onSubmit(data: ArtistFormValues) {
     if (!currentArtist) {
         toast({ variant: "destructive", title: "Error", description: "Could not find artist profile to update."});
         return;
@@ -120,7 +135,7 @@ export default function EditProfilePageClient() {
         bio: data.bio
     };
 
-    updateArtist(updatedArtist);
+    await updateArtist(updatedArtist);
 
     toast({
       title: "Profile Updated!",
@@ -161,7 +176,7 @@ export default function EditProfilePageClient() {
                        )}
                     </div>
                     <FormControl>
-                        <Input type="file" accept="image/*" onChange={handleProfilePictureUpload} className="text-xs"/>
+                        <Input type="file" accept="image/*" onChange={handleProfilePictureUpload} className="text-xs" disabled={isUploading}/>
                     </FormControl>
                     <FormMessage>{form.formState.errors.profilePictureUrl?.message}</FormMessage>
                 </div>
@@ -250,7 +265,7 @@ export default function EditProfilePageClient() {
 
               <div className="flex justify-end gap-4">
                 <Button type="button" variant="outline" onClick={() => router.push('/artist/dashboard')}>Cancel</Button>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
+                <Button type="submit" disabled={form.formState.isSubmitting || isUploading}>
                     {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
                 </Button>
               </div>

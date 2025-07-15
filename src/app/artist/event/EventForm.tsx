@@ -15,6 +15,8 @@ import { EVENT_CATEGORIES, EVENT_LANGUAGES } from '@/lib/events';
 import { useAuth } from '@/hooks/useAuth';
 import { useArtists } from '@/hooks/useArtists';
 import { generateEventDescription } from '@/ai/flows/generate-event-description';
+import { storage } from '@/lib/firebase';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,6 +39,7 @@ const eventFormSchema = z.object({
   duration: z.coerce.number().min(1, "Duration must be at least 1 minute."),
   ticketPrice: z.coerce.number().min(0, "Ticket price cannot be negative."),
   streamUrl: z.string().url("A valid YouTube URL is required.").refine(getYoutubeVideoId, "Must be a valid YouTube URL."),
+  bannerUrl: z.string().optional(), // For file upload
 });
 
 type EventFormValues = z.infer<typeof eventFormSchema>;
@@ -50,20 +53,21 @@ export default function EventForm({ eventId }: { eventId?: string }) {
 
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const isEditMode = !!eventId;
   const eventToUpdate = isEditMode ? events.find(e => e.id === eventId) : undefined;
-  const currentArtist = artists.find(a => a.email === user?.email);
+  const currentArtist = artists.find(a => a.id === user?.uid);
 
   const form = useForm<EventFormValues>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
       title: '',
       description: '',
-      category: '' as any, // Initialize to prevent uncontrolled -> controlled warning
+      category: '' as any,
       genre: 'Various',
       language: 'English',
-      time: '', // Initialize to prevent uncontrolled -> controlled warning
+      time: '',
       duration: 90,
       ticketPrice: 0,
       streamUrl: '',
@@ -78,23 +82,35 @@ export default function EventForm({ eventId }: { eventId?: string }) {
         date: eventDate,
         time: format(eventDate, 'HH:mm'),
       });
-      const videoId = getYoutubeVideoId(eventToUpdate.streamUrl);
-      if (videoId) {
-        setThumbnailPreview(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`);
-      }
+      setThumbnailPreview(eventToUpdate.bannerUrl);
     }
   }, [isEditMode, eventToUpdate, form]);
 
-  const handleYoutubeUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    form.setValue('streamUrl', url, { shouldValidate: true });
-    const videoId = getYoutubeVideoId(url);
-    if (videoId) {
-      setThumbnailPreview(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`);
-    } else {
-      setThumbnailPreview(null);
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user) {
+        setIsUploading(true);
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = async () => {
+            const dataUrl = reader.result as string;
+            setThumbnailPreview(dataUrl);
+            try {
+                const bannerRef = ref(storage, `event-thumbnails/${user.uid}/${Date.now()}`);
+                await uploadString(bannerRef, dataUrl, 'data_url');
+                const downloadURL = await getDownloadURL(bannerRef);
+                form.setValue('bannerUrl', downloadURL, { shouldValidate: true });
+                toast({ title: "Banner uploaded!" });
+            } catch (error) {
+                console.error("Banner upload error:", error);
+                toast({ variant: 'destructive', title: "Upload failed", description: "Could not upload banner."});
+            } finally {
+                setIsUploading(false);
+            }
+        };
     }
   };
+
 
   const handleGenerateDescription = async () => {
     const streamUrl = form.getValues('streamUrl');
@@ -114,8 +130,12 @@ export default function EventForm({ eventId }: { eventId?: string }) {
     }
   };
 
-  const onSubmit: SubmitHandler<EventFormValues> = (data) => {
-    // Force price to 0 if artist is not verified
+  const onSubmit: SubmitHandler<EventFormValues> = async (data) => {
+    if (!user || !currentArtist) {
+        toast({variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in as an artist.'});
+        return;
+    }
+
     if (!currentArtist?.isVerified) {
         data.ticketPrice = 0;
     }
@@ -123,8 +143,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
     const combinedDateTime = new Date(data.date);
     combinedDateTime.setHours(hours, minutes);
     
-    const videoId = getYoutubeVideoId(data.streamUrl);
-    const bannerUrl = videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : 'https://placehold.co/600x400';
+    const bannerUrl = form.getValues('bannerUrl') || 'https://placehold.co/600x400';
 
     if (isEditMode && eventToUpdate) {
       const updatedEvent = {
@@ -132,22 +151,22 @@ export default function EventForm({ eventId }: { eventId?: string }) {
         ...data,
         date: combinedDateTime.toISOString(),
         bannerUrl,
-        status: 'Pending' as const, // Reset status for re-approval
+        status: 'Pending' as const,
       };
-      updateEvent(updatedEvent);
+      await updateEvent(updatedEvent);
       toast({ title: "Event Updated!", description: `"${data.title}" has been submitted for re-approval.` });
     } else {
       const newEvent = {
-        id: new Date().getTime().toString(),
         ...data,
         date: combinedDateTime.toISOString(),
         artist: currentArtist?.name || 'Unknown Artist',
         artistEmail: user?.email || '',
+        artistId: user.uid,
         bannerUrl,
         status: 'Pending' as const,
         isBoosted: false,
       };
-      addEvent(newEvent);
+      await addEvent(newEvent as any);
       toast({ title: "Event Created!", description: `"${data.title}" has been submitted for approval.` });
     }
     router.push('/artist/dashboard');
@@ -350,9 +369,6 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 </FormItem>
               )}
             />
-          </div>
-
-          <div>
             <FormField
               control={form.control}
               name="streamUrl"
@@ -360,12 +376,20 @@ export default function EventForm({ eventId }: { eventId?: string }) {
                 <FormItem>
                   <FormLabel>YouTube Stream URL</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://youtube.com/watch?v=..." {...field} onChange={handleYoutubeUrlChange} />
+                    <Input placeholder="https://youtube.com/watch?v=..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+          </div>
+
+          <div>
+             <FormItem>
+                <FormLabel>Event Banner</FormLabel>
+                <FormControl><Input type="file" accept="image/*" onChange={handleBannerUpload} disabled={isUploading}/></FormControl>
+                 <FormMessage />
+             </FormItem>
             {thumbnailPreview && (
               <div className="mt-4">
                 <FormLabel>Banner Preview</FormLabel>
@@ -376,7 +400,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
             )}
           </div>
 
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button type="submit" disabled={form.formState.isSubmitting || isUploading}>
             {form.formState.isSubmitting ? 'Submitting...' : (isEditMode ? 'Update Event' : 'Create Event')}
           </Button>
         </form>

@@ -78,30 +78,21 @@ export default function ArtistRegisterPageClient() {
     }
   }
 
-  function onSubmit(data: ArtistFormValues) {
-    const newArtist = {
-        artistType: data.artistType,
-        name: data.name,
-        category: data.category,
-        profilePictureUrl: data.profilePictureUrl,
-        email: data.email,
-        password: data.password,
-        phone: data.phone,
-        address: data.address,
-        location: data.location,
-        socials: {
-            instagram: data.instagram,
-            youtube: data.youtube,
-            facebook: data.facebook,
-        },
-        bio: data.bio
-    };
-    addArtist(newArtist);
-    toast({
-      title: "Registration Submitted!",
-      description: "Your application is under review. We'll notify you soon.",
-    });
-    router.push('/');
+  async function onSubmit(data: ArtistFormValues) {
+    try {
+      await addArtist(data);
+      toast({
+        title: "Registration Submitted!",
+        description: "Your application is under review. We'll notify you soon.",
+      });
+      router.push('/login'); // Redirect to login page for artists
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: "Registration Failed",
+        description: error.message || "An unknown error occurred.",
+      });
+    }
   }
 
   return (

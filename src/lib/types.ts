@@ -15,26 +15,30 @@ export type Event = {
   category: EventCategory;
   artist: string;
   artistEmail: string;
-  date: string;
+  artistId: string;
+  date: string; // ISO String
   status: EventStatus;
   streamUrl: string;
   bannerUrl: string;
   genre: string;
   language: string;
   duration: number; // in minutes
-  ticketPrice: number; // in USD
+  ticketPrice: number;
   isBoosted?: boolean;
   thumbsUp?: number;
+  createdAt?: any; // Firestore timestamp
 };
 
 export type UserRole = 'artist' | 'admin' | 'user';
 
 export type User = {
+  uid: string;
   email: string;
   role: UserRole;
   name?: string;
   phone?: string;
   profilePictureUrl?: string;
+  subscription?: any; // Simplified for now
 };
 
 export type MovieGenre = typeof MOVIE_GENRES[number];
@@ -49,6 +53,7 @@ export type Movie = {
     videoUrl: string;
     bannerUrl: string;
     durationMinutes?: number;
+    createdAt?: any; // Firestore timestamp
 }
 
 // Artist Registration Types
@@ -57,7 +62,8 @@ export type ArtistCategory = typeof ARTIST_CATEGORIES[number];
 export type ArtistStatus = 'Pending' | 'Approved' | 'Rejected';
 
 export type Artist = {
-  id: string;
+  id: string; // Firestore document ID
+  uid: string; // Firebase Auth UID
   artistType: ArtistType;
   name: string;
   category: ArtistCategory;
@@ -96,16 +102,12 @@ export type VerificationRequest = {
     rejectionReason?: string;
 };
 
-// Guest checkout and ticketing
-export type GuestDetails = {
-    name: string;
-    email: string;
-    phone: string;
-};
 
 export type PurchasedTicket = {
+    id?: string;
     eventId: string;
     purchaseDate: string;
+    userId: string;
     userEmail: string; // Can be guest email or logged-in user email
-    guestDetails?: GuestDetails;
+    subscriptionUsed: boolean;
 };

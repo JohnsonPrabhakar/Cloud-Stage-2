@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own document
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Artists can create events, anyone can read them
+    match /events/{eventId} {
+      allow read: if true;
+      allow create: if request.auth != null; // artists create events
+      allow update: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'artist' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Authenticated users can manage their tickets
+    match /tickets/{ticketId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Anyone can read movie data
+    match /movies/{movieId} {
+      allow read: if true;
+      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Users can manage their own subscription
+    match /subscriptions/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Artists can submit verification requests, admin can manage them
+    match /verificationRequests/{requestId} {
+       allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+       allow create: if request.auth != null;
+       allow update, delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}

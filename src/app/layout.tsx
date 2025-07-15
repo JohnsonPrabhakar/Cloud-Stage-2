@@ -26,20 +26,20 @@ export default function RootLayout({
       </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased", "gradient-background")}>
         <AppStatusProvider>
-          <ArtistProvider>
+          <AuthProvider>
             <UserProvider>
-              <AuthProvider>
+              <ArtistProvider>
                 <EventProvider>
                   <MovieProvider>
-                      <TicketProvider>
-                          {children}
-                          <Toaster />
-                      </TicketProvider>
+                    <TicketProvider>
+                      {children}
+                      <Toaster />
+                    </TicketProvider>
                   </MovieProvider>
                 </EventProvider>
-              </AuthProvider>
+              </ArtistProvider>
             </UserProvider>
-          </ArtistProvider>
+          </AuthProvider>
         </AppStatusProvider>
       </body>
     </html>

@@ -11,6 +11,8 @@ import { MOVIE_GENRES, MOVIE_LANGUAGES } from '@/lib/movies';
 import { getYoutubeVideoId } from '@/lib/utils';
 import Image from 'next/image';
 import { useState } from 'react';
+import { storage } from '@/lib/firebase';
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +26,8 @@ const movieFormSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters."),
   genre: z.enum(MOVIE_GENRES, { required_error: "Genre is required." }),
   language: z.enum(MOVIE_LANGUAGES, { required_error: "Language is required." }),
-  videoUrl: z.string().url("A valid YouTube URL is required.").refine(getYoutubeVideoId, "Must be a valid YouTube URL."),
+  videoUrl: z.string().url("A valid URL is required."), // Can be youtube or storage URL
+  bannerUrl: z.string().url("A banner image is required."),
 });
 
 type MovieFormValues = z.infer<typeof movieFormSchema>;
@@ -34,6 +37,7 @@ export default function AddMoviePageClient() {
   const { addMovie } = useMovies();
   const { toast } = useToast();
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<MovieFormValues>({
     resolver: zodResolver(movieFormSchema),
@@ -41,35 +45,46 @@ export default function AddMoviePageClient() {
       title: '',
       description: '',
       videoUrl: '',
+      bannerUrl: '',
     },
   });
   
-  const handleYoutubeUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    form.setValue('videoUrl', url, { shouldValidate: true });
-    const videoId = getYoutubeVideoId(url);
-    if (videoId) {
-      setBannerPreview(`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`);
-    } else {
-      setBannerPreview(null);
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async () => {
+        const dataUrl = reader.result as string;
+        setBannerPreview(dataUrl);
+        try {
+          const bannerRef = ref(storage, `movie-thumbnails/${Date.now()}`);
+          await uploadString(bannerRef, dataUrl, 'data_url');
+          const downloadURL = await getDownloadURL(bannerRef);
+          form.setValue('bannerUrl', downloadURL, { shouldValidate: true });
+          toast({ title: 'Banner uploaded!' });
+        } catch (error) {
+          toast({ variant: 'destructive', title: 'Upload failed' });
+        } finally {
+          setIsUploading(false);
+        }
+      };
     }
   };
 
-  function onSubmit(data: MovieFormValues) {
-    const videoId = getYoutubeVideoId(data.videoUrl);
-    const newId = `m${new Date().getTime()}`;
-    const bannerUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-    
-    addMovie({ id: newId, ...data, bannerUrl });
-    
-    toast({
-      title: "Movie Added Successfully!",
-      description: `"${data.title}" is now available in the movie library.`,
-    });
-    
-    // Optionally redirect or clear form
-    form.reset();
-    setBannerPreview(null);
+  async function onSubmit(data: MovieFormValues) {
+    try {
+      await addMovie(data);
+      toast({
+        title: "Movie Added Successfully!",
+        description: `"${data.title}" is now available in the movie library.`,
+      });
+      form.reset();
+      setBannerPreview(null);
+    } catch (error) {
+       toast({ variant: 'destructive', title: 'Failed to add movie' });
+    }
   }
 
   return (
@@ -141,12 +156,18 @@ export default function AddMoviePageClient() {
               name="videoUrl"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>YouTube Video URL</FormLabel>
-                  <FormControl><Input placeholder="https://youtube.com/watch?v=..." {...field} onChange={handleYoutubeUrlChange} /></FormControl>
+                  <FormLabel>Video URL</FormLabel>
+                  <FormControl><Input placeholder="https://youtube.com/watch?v=... or Firebase Storage URL" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
+            <FormItem>
+              <FormLabel>Banner Image</FormLabel>
+              <FormControl><Input type="file" accept="image/*" onChange={handleBannerUpload} disabled={isUploading}/></FormControl>
+              <FormMessage />
+            </FormItem>
 
             {bannerPreview && (
               <div className="mt-4">
@@ -157,7 +178,7 @@ export default function AddMoviePageClient() {
               </div>
             )}
 
-            <Button type="submit" disabled={form.formState.isSubmitting}>
+            <Button type="submit" disabled={form.formState.isSubmitting || isUploading}>
               {form.formState.isSubmitting ? 'Adding...' : 'Add Movie'}
             </Button>
           </form>

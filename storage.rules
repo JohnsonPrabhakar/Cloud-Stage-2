@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Allow public read on thumbnails and profile images
+    match /event-thumbnails/{allPaths=**} {
+      allow read;
+    }
+    match /profile-images/{allPaths=**} {
+      allow read;
+    }
+     match /movie-thumbnails/{allPaths=**} {
+      allow read;
+    }
+
+    // Users can only write to their own profile image path
+    match /profile-images/{userId}/{fileName} {
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Artists can write to event thumbnails
+    match /event-thumbnails/{eventId}/{fileName} {
+      allow write: if request.auth != null; // Further rules can check for artist role via custom claims or firestore lookups
+    }
+
+    // Admins can write movies
+    match /movies/{movieId}/{fileName} {
+        allow write: if request.auth != null; // Should be restricted to admin role
+    }
+    
+    // Artists can upload verification documents
+    match /verification-videos/{userId}/{fileName} {
+       allow write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
