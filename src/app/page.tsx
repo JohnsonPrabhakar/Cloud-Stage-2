@@ -125,13 +125,17 @@ function HeroCarousel() {
 export default function Home() {
   const { events } = useEvents();
 
-  const approvedEvents = useMemo(() => {
-    return events.filter(e => e.status === 'Live' || e.status === 'Upcoming' || e.status === 'Approved');
+  const liveEvents = useMemo(() => {
+    return events.filter(e => e.status === 'Live');
   }, [events]);
 
-  const liveEvents = useMemo(() => approvedEvents.filter(e => e.status === 'Live'), [approvedEvents]);
-  const upcomingEvents = useMemo(() => approvedEvents.filter(e => e.status === 'Upcoming' || e.status === 'Approved'), [approvedEvents]);
-  const pastEvents = useMemo(() => events.filter(e => e.status === 'Past'), [events]);
+  const upcomingEvents = useMemo(() => {
+    return events.filter(e => e.status === 'Upcoming' || e.status === 'Approved');
+  }, [events]);
+
+  const pastEvents = useMemo(() => {
+    return events.filter(e => e.status === 'Past');
+  }, [events]);
 
   return (
     <>
