@@ -62,7 +62,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: artist.name,
             profilePictureUrl: artist.profilePictureUrl
         };
-        localStorage.setItem('user', JSON.stringify(loggedInUser));
+        
+        // Prevent storing large base64 images in the user session
+        try {
+            const userToStore = {...loggedInUser};
+            if (userToStore.profilePictureUrl && userToStore.profilePictureUrl.startsWith('data:image')) {
+                // Don't store large image data in the session object
+                delete userToStore.profilePictureUrl;
+            }
+            localStorage.setItem('user', JSON.stringify(userToStore));
+        } catch (error) {
+            console.error("Error saving user to localStorage:", error);
+            toast({
+                variant: "destructive",
+                title: "Session Error",
+                description: "Could not save user session. The profile picture might be too large.",
+            });
+        }
+        
         setUser(loggedInUser);
         router.push('/artist/dashboard');
         return;
