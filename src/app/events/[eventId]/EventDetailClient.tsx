@@ -32,11 +32,7 @@ interface ChatMessage {
     avatar: string;
 }
 
-const initialMessages: ChatMessage[] = [
-    { id: 1, name: 'Alex', message: 'This is amazing!', avatar: 'A' },
-    { id: 2, name: 'Mia', message: 'So glad I joined!', avatar: 'M' },
-    { id: 3, name: 'David', message: 'What a performance!', avatar: 'D' },
-];
+const initialMessages: ChatMessage[] = [];
 
 function LiveChat() {
     const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
@@ -63,17 +59,24 @@ function LiveChat() {
                 <CardTitle>Live Chat</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow overflow-y-auto space-y-4">
-                {messages.map((msg) => (
-                    <div key={msg.id} className="flex items-start gap-3">
-                        <Avatar className="h-8 w-8">
-                            <AvatarFallback>{msg.avatar}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                            <p className="font-semibold text-sm">{msg.name}</p>
-                            <p className="text-sm text-muted-foreground bg-secondary p-2 rounded-lg">{msg.message}</p>
+                {messages.length > 0 ? (
+                    messages.map((msg) => (
+                        <div key={msg.id} className="flex items-start gap-3">
+                            <Avatar className="h-8 w-8">
+                                <AvatarFallback>{msg.avatar}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                                <p className="font-semibold text-sm">{msg.name}</p>
+                                <p className="text-sm text-muted-foreground bg-secondary p-2 rounded-lg">{msg.message}</p>
+                            </div>
                         </div>
+                    ))
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <p>No messages yet.</p>
+                        <p className="text-xs">Be the first to say something!</p>
                     </div>
-                ))}
+                )}
             </CardContent>
             <CardFooter>
                  <form onSubmit={handleSendMessage} className="flex w-full items-center gap-2">
