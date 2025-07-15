@@ -6,6 +6,7 @@ import type { PurchasedTicket } from '@/lib/types';
 import { useUsers } from './UserContext';
 import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, serverTimestamp, query, where } from 'firebase/firestore';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TicketContextType {
   purchasedTickets: PurchasedTicket[];
@@ -18,25 +19,30 @@ export const TicketContext = createContext<TicketContextType | undefined>(undefi
 export function TicketProvider({ children }: { children: ReactNode }) {
   const [purchasedTickets, setPurchasedTickets] = useState<PurchasedTicket[]>([]);
   const { incrementEventCount } = useUsers();
+  const { user } = useAuth(); // Use the user from our context
 
   useEffect(() => {
-    if (auth.currentUser) {
-      const q = query(collection(db, "tickets"), where("userId", "==", auth.currentUser.uid));
+    // Depend on the user object from AuthContext, not auth.currentUser
+    if (user?.uid) {
+      const q = query(collection(db, "tickets"), where("userId", "==", user.uid));
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         const ticketsData: PurchasedTicket[] = [];
         querySnapshot.forEach((doc) => {
           ticketsData.push({ id: doc.id, ...doc.data() } as PurchasedTicket);
         });
         setPurchasedTickets(ticketsData);
+      }, (error) => {
+        console.error("Firestore snapshot error in TicketContext:", error);
       });
       return () => unsubscribe();
     } else {
+        // If there's no user, ensure the tickets list is empty.
         setPurchasedTickets([]);
     }
-  }, [auth.currentUser]);
+  }, [user]); // Re-run effect when the user object changes
 
   const purchaseTicket = async (eventId: string, userEmail: string, isPremium: boolean = false) => {
-    if (!auth.currentUser) return;
+    if (!user) return; // Guard against purchase attempts when logged out
     if (hasTicket(eventId, userEmail)) return;
 
     if(isPremium) {
@@ -45,7 +51,7 @@ export function TicketProvider({ children }: { children: ReactNode }) {
 
     await addDoc(collection(db, "tickets"), {
       eventId,
-      userId: auth.currentUser.uid,
+      userId: user.uid,
       userEmail,
       purchaseDate: serverTimestamp(),
       subscriptionUsed: isPremium,
