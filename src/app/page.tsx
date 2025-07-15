@@ -38,12 +38,12 @@ export default function Home() {
   const { events } = useEvents();
 
   const approvedEvents = useMemo(() => {
-    return events.filter(e => e.status === 'Live' || e.status === 'Upcoming' || e.status === 'Past' || e.status === 'Approved');
+    return events.filter(e => e.status === 'Live' || e.status === 'Upcoming' || e.status === 'Approved');
   }, [events]);
 
   const liveEvents = useMemo(() => approvedEvents.filter(e => e.status === 'Live'), [approvedEvents]);
   const upcomingEvents = useMemo(() => approvedEvents.filter(e => e.status === 'Upcoming' || e.status === 'Approved'), [approvedEvents]);
-  const pastEvents = useMemo(() => approvedEvents.filter(e => e.status === 'Past'), [approvedEvents]);
+  const pastEvents = useMemo(() => events.filter(e => e.status === 'Past'), [events]);
 
   return (
     <>
