@@ -34,6 +34,7 @@ export type User = {
   role: UserRole;
   name?: string;
   phone?: string;
+  profilePictureUrl?: string;
 };
 
 export type MovieGenre = typeof MOVIE_GENRES[number];

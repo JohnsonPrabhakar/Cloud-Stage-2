@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
@@ -7,6 +8,7 @@ import { dummyUsers } from '@/lib/users';
 interface UserContextType {
   users: RegisteredUser[];
   addUser: (user: RegisteredUser) => void;
+  updateUser: (user: RegisteredUser) => void;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -19,7 +21,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (storedUsers) {
         try {
             const parsed = JSON.parse(storedUsers);
-            if (Array.isArray(parsed) && parsed.length > 0) {
+            if (Array.isArray(parsed)) {
                 setUsers(parsed);
             } else {
                 setUsers(dummyUsers);
@@ -45,9 +47,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const updatedUsers = [user, ...users];
     updateUsersInStorage(updatedUsers);
   };
+  
+  const updateUser = (updatedUserData: RegisteredUser) => {
+    const updatedUsers = users.map(user => 
+      user.email === updatedUserData.email ? updatedUserData : user
+    );
+    updateUsersInStorage(updatedUsers);
+  };
 
   return (
-    <UserContext.Provider value={{ users, addUser }}>
+    <UserContext.Provider value={{ users, addUser, updateUser }}>
       {children}
     </UserContext.Provider>
   );

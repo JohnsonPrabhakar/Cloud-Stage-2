@@ -3,14 +3,15 @@
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import type { User } from '@/lib/types';
+import type { User as AuthUser } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useArtists } from '@/hooks/useArtists';
 import { useUsers } from '@/context/UserContext';
 
 
 interface AuthContextType {
-  user: User | null;
+  user: AuthUser | null;
+  setUser: (user: AuthUser | null) => void;
   loginAdminOrArtist: (email: string, pass: string) => void;
   loginUser: (email: string, pass: string) => void;
   registerUser: (name: string, email: string, phone: string, pass: string) => void;
@@ -21,7 +22,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginAdminOrArtist = (email: string, pass: string) => {
     // Check for admin
     if (email === 'admin@cloudstage.live' && pass === 'PASSWORD') {
-      const loggedInUser: User = { email, role: 'admin' };
+      const loggedInUser: AuthUser = { email, role: 'admin', name: 'Admin User' };
       localStorage.setItem('user', JSON.stringify(loggedInUser));
       setUser(loggedInUser);
       router.push('/admin');
@@ -55,7 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for artists
     const artist = artists.find(a => a.email === email);
     if (artist && (pass === 'PASSWORD' || pass === artist.password)) {
-        const loggedInUser: User = { email, role: 'artist', name: artist.name };
+        const loggedInUser: AuthUser = { 
+            email, 
+            role: 'artist', 
+            name: artist.name,
+            profilePictureUrl: artist.profilePictureUrl
+        };
         localStorage.setItem('user', JSON.stringify(loggedInUser));
         setUser(loggedInUser);
         router.push('/artist/dashboard');
@@ -72,11 +78,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginUser = (email: string, pass: string) => {
     const registeredUser = users.find(u => u.email === email);
     if(registeredUser && registeredUser.password === pass) {
-        const loggedInUser: User = { 
+        const loggedInUser: AuthUser = { 
             name: registeredUser.name,
             email: registeredUser.email,
             phone: registeredUser.phone,
-            role: 'user' 
+            role: 'user',
+            profilePictureUrl: registeredUser.profilePictureUrl
         };
         localStorage.setItem('user', JSON.stringify(loggedInUser));
         setUser(loggedInUser);
@@ -115,7 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           name,
           email,
           phone,
-          password: pass
+          password: pass,
+          profilePictureUrl: `https://api.dicebear.com/8.x/initials/svg?seed=${name}`
       };
       addUser(newUser);
       
@@ -125,7 +133,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       // Automatically log the user in
-      const loggedInUser: User = { name: newUser.name, email: newUser.email, phone: newUser.phone, role: 'user' };
+      const loggedInUser: AuthUser = { 
+          name: newUser.name, 
+          email: newUser.email, 
+          phone: newUser.phone, 
+          role: 'user',
+          profilePictureUrl: newUser.profilePictureUrl
+      };
       localStorage.setItem('user', JSON.stringify(loggedInUser));
       setUser(loggedInUser);
 
@@ -144,11 +158,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     if(pathname.startsWith('/admin') || pathname.startsWith('/artist')) {
         router.push('/');
+    } else {
+        // Optional: force a reload to clear state if needed on public pages
+        // router.push('/');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loginAdminOrArtist, loginUser, registerUser, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, setUser, loginAdminOrArtist, loginUser, registerUser, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
