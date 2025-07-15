@@ -32,7 +32,9 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T | ((val
            console.error(
               `Error setting localStorage key “${key}”: Data size (${stringifiedValue.length}) exceeds limit. A large object (like a file) was likely passed unintentionally.`
            );
-           return; // Abort saving to prevent crash
+            // Update state in memory but prevent writing to localStorage to avoid crash
+           setStoredValue(valueToStore);
+           return;
       }
 
       setStoredValue(valueToStore);

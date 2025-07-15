@@ -5,6 +5,8 @@ import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { User as RegisteredUser } from '@/lib/users';
 import { dummyUsers } from '@/lib/users';
 
+const LOCALSTORAGE_SIZE_LIMIT = 4 * 1024 * 1024; // 4MB
+
 interface UserContextType {
   users: RegisteredUser[];
   addUser: (user: RegisteredUser) => void;
@@ -39,8 +41,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const updateUsersInStorage = (updatedUsers: RegisteredUser[]) => {
-    setUsers(updatedUsers);
-    localStorage.setItem('users', JSON.stringify(updatedUsers));
+    try {
+        const stringifiedValue = JSON.stringify(updatedUsers);
+        if (stringifiedValue.length > LOCALSTORAGE_SIZE_LIMIT) {
+             console.error(
+                `Error setting localStorage key “users”: Data size (${stringifiedValue.length}) exceeds limit. A large object (like a file) was likely passed unintentionally.`
+             );
+             // We still update the state in memory, but don't save to localStorage to prevent crashing.
+             setUsers(updatedUsers);
+             return; 
+        }
+        setUsers(updatedUsers);
+        localStorage.setItem('users', stringifiedValue);
+    } catch (error) {
+        console.error(`Error setting localStorage key “users”:`, error);
+    }
   };
 
   const addUser = (user: RegisteredUser) => {
