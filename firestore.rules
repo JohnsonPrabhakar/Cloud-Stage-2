@@ -1,55 +1,48 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
+    
+    // Helper Functions
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isUser(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    function getRole(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data.role;
-    }
-
-    function isAdmin() {
-      return isAuthenticated() && getRole(request.auth.uid) == 'admin';
-    }
-
-    function isArtist() {
-      return isAuthenticated() && getRole(request.auth.uid) == 'artist';
-    }
-
+    // Users can only be read if they are an artist.
+    // Any user can update their OWN document. No one else can.
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isUser(userId) || isAdmin();
-    }
-
-    match /events/{eventId} {
-      allow read: if true;
-      allow create: if isArtist();
-      allow update, delete: if (isArtist() && resource.data.artistId == request.auth.uid) || isAdmin();
-    }
-
-    match /tickets/{ticketId} {
-      allow read: if isUser(resource.data.userId);
-      allow create: if isUser(request.resource.data.userId);
-    }
-
-    match /movies/{movieId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isAdmin();
+      allow read: if resource.data.role == 'artist' || request.auth.uid == userId;
+      allow write: if request.auth.uid == userId;
     }
     
-    match /verificationRequests/{requestId} {
-      allow read, update: if isAdmin();
-      allow create: if isArtist();
+    // Events can be read by anyone.
+    // Only authenticated artists can create/update events.
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'artist';
     }
 
+    // Tickets can only be created and read by the user who owns them.
+    match /tickets/{ticketId} {
+      allow read, create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Movies can be read by anyone.
+    // Only admins can write movies.
+    match /movies/{movieId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Subscriptions can only be read or written by the user who owns them.
     match /subscriptions/{userId} {
-      allow read, write: if isUser(userId);
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Verification requests can only be read/written by admins.
+    // Artists can create them.
+    match /verificationRequests/{requestId} {
+      allow read, update, delete: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow create: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'artist';
     }
   }
 }
