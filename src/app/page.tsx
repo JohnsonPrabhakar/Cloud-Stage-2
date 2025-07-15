@@ -78,7 +78,7 @@ const promoSlides = [
 
 function HeroCarousel() {
   const plugin = useRef(
-    Autoplay({ delay: 2500, stopOnInteraction: true })
+    Autoplay({ delay: 1000, stopOnInteraction: true })
   )
 
   return (
