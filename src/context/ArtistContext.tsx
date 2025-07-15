@@ -53,12 +53,14 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       console.error("Firestore Error (Artists):", error);
     });
 
+    // This listener is primarily for admin use, but we'll manage it here
     const requestsQuery = query(collection(db, "verificationRequests"));
     const unsubscribeRequests = onSnapshot(requestsQuery, (snapshot) => {
         const requestsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as VerificationRequest));
         setVerificationRequests(requestsData);
     }, (error) => {
-        console.error("Firestore Error (Verification Requests):", error);
+        // This can error for non-admins, which is expected. We can log it silently.
+        // console.log("Note: User does not have permissions for verification requests. This is normal for non-admins.");
     });
 
 
@@ -71,10 +73,12 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
   const addArtist = async (artistData: Omit<Artist, 'id' | 'uid' | 'status' | 'isVerified' | 'followers'>) => {
     if (!artistData.password) throw new Error("Password is required to create an artist account.");
     
+    // Note: In a real app, you might want a backend function to do this to avoid exposing password creation logic on the client.
     const userCredential = await createUserWithEmailAndPassword(auth, artistData.email, artistData.password);
     const user = userCredential.user;
 
     const storageRef = ref(storage, `profile-images/${user.uid}/profile.jpg`);
+    // Assuming profilePictureUrl is a data URL from the form
     await uploadString(storageRef, artistData.profilePictureUrl, 'data_url');
     const downloadURL = await getDownloadURL(storageRef);
 
@@ -93,12 +97,13 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
         bio: artistData.bio,
         socials: artistData.socials,
         role: 'artist',
-        status: 'Pending',
+        status: 'Pending', // All new artists must be approved
         isVerified: false,
         followers: [],
         createdAt: serverTimestamp(),
     };
 
+    // Use the UID as the document ID for easy lookup
     await setDoc(doc(db, "users", user.uid), finalArtistData);
   };
   
@@ -116,7 +121,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
     const artist = artists.find(a => a.id === artistId);
     if (!artist) return;
     
-    // Check for existing pending request
+    // Check for existing pending request to avoid duplicates
     const existingRequestQuery = query(collection(db, "verificationRequests"), where("artistId", "==", artistId), where("status", "==", "Pending"));
     const existingRequestSnapshot = await getDocs(existingRequestQuery);
     if(!existingRequestSnapshot.empty) {
@@ -139,6 +144,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
       const artistRef = doc(db, "users", artistId);
       await updateDoc(artistRef, { isVerified: true });
 
+      // Update the status of the corresponding verification request
       const requestQuery = query(collection(db, "verificationRequests"), where("artistId", "==", artistId));
       const requestSnapshot = await getDocs(requestQuery);
       requestSnapshot.forEach(async (doc) => {
