@@ -63,21 +63,21 @@ export default function Home() {
                 <TabsTrigger value="past">Past Events</TabsTrigger>
               </TabsList>
               <TabsContent value="live" className="mt-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                    {liveEvents.length > 0 ? (
                         liveEvents.map((event) => <EventCard key={event.id} event={event} />)
                     ) : <p className="col-span-full text-center text-muted-foreground">No live events right now. Check back soon!</p>}
                 </div>
               </TabsContent>
               <TabsContent value="upcoming" className="mt-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {upcomingEvents.length > 0 ? (
                         upcomingEvents.slice(0, 8).map((event) => <EventCard key={event.id} event={event} />)
                      ) : <p className="col-span-full text-center text-muted-foreground">No upcoming events scheduled.</p>}
                 </div>
               </TabsContent>
               <TabsContent value="past" className="mt-8">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                      {pastEvents.length > 0 ? (
                         pastEvents.slice(0, 4).map((event) => <EventCard key={event.id} event={event} />)
                      ) : <p className="col-span-full text-center text-muted-foreground">No past events found.</p>}
