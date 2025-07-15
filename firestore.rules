@@ -9,76 +9,37 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Helper function to check if the user is an admin
-    function isAdmin() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Helper function to check if the user is the owner of the document
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    // Rules for the 'users' collection
+    // USERS: Publicly readable, but only the user can write to their own document.
     match /users/{userId} {
-      // Anyone can view user/artist profiles
-      allow get: if true;
-      // Any authenticated user can list users (needed for artist list)
-      allow list: if true;
-      // Only the owner or an admin can update a profile
-      allow update: if isOwner(userId) || isAdmin();
-      // Only an admin can create or delete users (registration is handled by a different flow)
-      allow create, delete: if isAdmin();
+      allow read: if true;
+      allow write: if isAuthenticated() && request.auth.uid == userId;
     }
-    
-    // Rules for the 'events' collection
+
+    // EVENTS: Publicly readable. Only authenticated users (artists) can create.
+    // Only the original artist or an admin can update.
     match /events/{eventId} {
-      // Anyone can view events
       allow read: if true;
-      // Only an authenticated artist can create an event
-      allow create: if isAuthenticated() && request.resource.data.artistId == request.auth.uid;
-      // Only the artist who owns the event or an admin can update it
-      allow update: if (isAuthenticated() && resource.data.artistId == request.auth.uid) || isAdmin();
-      // Only an admin can delete an event
-      allow delete: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (resource.data.artistId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+      allow delete: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Rules for the 'movies' collection
+    // MOVIES: Publicly readable. Only admins can write.
     match /movies/{movieId} {
-      // Anyone can view movies
-      allow read: if true;
-      // Only an admin can create, update, or delete movies
-      allow write: if isAdmin();
+        allow read: if true;
+        allow write: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Rules for the 'tickets' collection
+    // TICKETS: Can only be created by authenticated users.
+    // Users can only read their own tickets.
     match /tickets/{ticketId} {
-      // Users can only read their own tickets
-      allow read: if isOwner(resource.data.userId);
-       // Authenticated users can create their own tickets
-      allow create: if isOwner(request.resource.data.userId);
-      // Tickets cannot be updated or deleted by users
-      allow update, delete: if false;
-    }
-
-    // Rules for 'verificationRequests'
-    match /verificationRequests/{requestId} {
-      // Only admins can read verification requests
-      allow read: if isAdmin();
-      // Only the artist making the request can create it
-      allow create: if isOwner(request.resource.data.artistId);
-      // Only admins can update (approve/reject) them
-      allow update: if isAdmin();
-      // Deletion is not allowed
-      allow delete: if false;
+      allow create: if isAuthenticated();
+      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
     }
     
-    // Rules for the 'appStatus' document (if you have one)
-    match /config/appStatus {
-        // Anyone can read the app status
-        allow get: if true;
-        // Only admins can update the status
-        allow write: if isAdmin();
+    // VERIFICATION REQUESTS: Only readable and writable by admins.
+    match /verificationRequests/{requestId} {
+        allow read, write, create: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
