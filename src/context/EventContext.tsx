@@ -18,20 +18,43 @@ export const EventContext = createContext<EventContextType | undefined>(undefine
 export function EventProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<Event[]>([]);
 
-  useEffect(() => {
-    const storedEvents = localStorage.getItem('events');
-    if (storedEvents) {
-        try {
-            const parsedEvents = JSON.parse(storedEvents);
-            setEvents(parsedEvents);
-        } catch (error) {
-            console.error("Failed to parse events from localStorage, initializing with empty array.", error);
-            setEvents([]);
+  // Function to dynamically update event statuses
+  const updateDynamicEventStatuses = (currentEvents: Event[]): Event[] => {
+    const now = new Date();
+    return currentEvents.map(event => {
+      // We only want to dynamically update events that are managed by time
+      if (event.status === 'Upcoming' || event.status === 'Live' || event.status === 'Approved') {
+        const eventDate = new Date(event.date);
+        const eventEndDate = new Date(eventDate.getTime() + (event.duration || 0) * 60000);
+
+        if (now > eventEndDate) {
+          return { ...event, status: 'Past' };
+        } else if (now >= eventDate && now <= eventEndDate) {
+          return { ...event, status: 'Live' };
         }
-    } else {
-        // Start with an empty array if no events are in storage
-        setEvents([]);
+      }
+      // Return the event as-is if it's Pending, Rejected, or already Past
+      return event;
+    });
+  };
+
+  useEffect(() => {
+    let initialEvents: Event[] = [];
+    try {
+      const storedEvents = localStorage.getItem('events');
+      if (storedEvents) {
+        initialEvents = JSON.parse(storedEvents);
+      }
+    } catch (error) {
+      console.error("Failed to parse events from localStorage, initializing with empty array.", error);
+      initialEvents = [];
     }
+    
+    // Update statuses on initial load
+    const updatedEvents = updateDynamicEventStatuses(initialEvents);
+    setEvents(updatedEvents);
+    localStorage.setItem('events', JSON.stringify(updatedEvents));
+
   }, []);
 
   const updateEventsInStorage = (updatedEvents: Event[]) => {
