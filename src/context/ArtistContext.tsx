@@ -3,7 +3,7 @@
 
 import { createContext, useState, useEffect, type ReactNode, useContext } from 'react';
 import type { Artist, ArtistStatus, VerificationRequest } from '@/lib/types';
-import { db, auth, storage } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
@@ -55,6 +55,7 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
     } else {
       setVerificationRequests([]); // Clear requests for non-admins
     }
+
 
     return () => {
       unsubscribeArtists();
@@ -174,12 +175,3 @@ export function ArtistProvider({ children }: { children: ReactNode }) {
     </ArtistContext.Provider>
   );
 }
-
-// Hook to use the context
-export const useArtists = () => {
-    const context = useContext(ArtistContext);
-    if (context === undefined) {
-        throw new Error('useArtists must be used within a ArtistProvider');
-    }
-    return context;
-};
