@@ -73,7 +73,6 @@ export default function Header() {
     { href: '/', label: 'Home' },
     { href: '/events', label: 'Events' },
     { href: '/movies', label: 'Movies' },
-    { href: '/devotional-status', label: 'Daily Status' },
   ];
 
   return (
