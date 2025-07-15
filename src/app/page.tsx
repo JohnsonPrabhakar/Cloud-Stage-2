@@ -97,7 +97,7 @@ function HeroCarousel() {
         onMouseLeave={plugin.current.reset}
     >
       <CarouselContent>
-        {promoSlides.map((slide) => (
+        {promoSlides.map((slide, index) => (
           <CarouselItem key={slide.id}>
             <Card className="border-none overflow-hidden">
               <CardContent className="flex aspect-[16/7] md:aspect-[16/6] items-center justify-center p-0 relative">
@@ -107,6 +107,7 @@ function HeroCarousel() {
                     fill
                     className="object-cover" 
                     data-ai-hint={slide.hint}
+                    priority={index === 0}
                 />
                 <div className="absolute inset-0 bg-black/50" />
                 <h2 className="relative text-2xl md:text-4xl lg:text-5xl font-headline font-bold text-white text-center p-4 z-10 animate-fade-in-up">

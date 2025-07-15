@@ -3,43 +3,53 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Helper function to check if a user is authenticated
+    
+    // Helper function to check for authentication
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // USERS: Publicly readable, but only the user can write to their own document.
+    // Helper function to check if the user is an admin
+    function isAdmin() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper function to check if the user is an artist
+    function isArtist() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'artist';
+    }
+    
+    // Users: Publicly readable, but only the user themselves or an admin can write.
     match /users/{userId} {
       allow read: if true;
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow write: if request.auth.uid == userId || isAdmin();
     }
-
-    // EVENTS: Publicly readable. Only authenticated users (artists) can create.
-    // Only the original artist or an admin can update.
+    
+    // Events: Publicly readable. Only artists can create, and only the event owner (artist) or an admin can update.
     match /events/{eventId} {
       allow read: if true;
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (resource.data.artistId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      allow delete: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // MOVIES: Publicly readable. Only admins can write.
-    match /movies/{movieId} {
-        allow read: if true;
-        allow write: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow create: if isArtist();
+      allow update: if isArtist() && request.resource.data.artistId == request.auth.uid || isAdmin();
+      allow delete: if isAdmin();
     }
 
-    // TICKETS: Can only be created by authenticated users.
-    // Users can only read their own tickets.
-    match /tickets/{ticketId} {
-      allow create: if isAuthenticated();
-      allow read, write: if isAuthenticated() && request.auth.uid == resource.data.userId;
+    // Movies: Publicly readable. Only admins can manage.
+    match /movies/{movieId} {
+      allow read: if true;
+      allow write, delete: if isAdmin();
     }
     
-    // VERIFICATION REQUESTS: Only readable and writable by admins.
+    // Tickets: Readable only by the user who owns it. Writable only upon creation.
+    match /tickets/{ticketId} {
+      allow read: if request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Tickets are immutable once created
+    }
+    
+    // Verification Requests: Readable and writable only by admins.
     match /verificationRequests/{requestId} {
-        allow read, write, create: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      allow read, write: if isAdmin();
+      allow create: if isArtist(); // Artists need to be able to create requests
     }
   }
 }
