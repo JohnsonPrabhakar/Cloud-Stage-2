@@ -9,7 +9,6 @@ import { useEvents } from '@/hooks/useEvents';
 import Header from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { EventCard } from '@/components/EventCard';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -23,21 +22,20 @@ import {
 function EventCarousel({ title, events }: { title: string; events: any[] }) {
     if (events.length === 0) {
       return (
-        <div className="text-center text-muted-foreground py-16">
-          <h2 className="text-2xl font-semibold">No {title.toLowerCase()}</h2>
-          <p>Check back later for more events.</p>
+        <div className="text-center text-muted-foreground py-8">
+          <p>No {title.toLowerCase()} right now.</p>
         </div>
       )
     }
 
     return (
         <section className="w-full py-4 md:py-6">
-            <h2 className="text-2xl font-bold font-headline tracking-tighter sm:text-3xl mb-6 sr-only">{title}</h2>
+            <h2 className="text-2xl font-bold font-headline tracking-tighter sm:text-3xl mb-4">{title}</h2>
             <div className="relative">
                 <ScrollArea>
                     <div className="flex space-x-4 pb-4">
                         {events.map((event) => (
-                            <EventCard key={event.id} event={event} className="w-56 md:w-64" />
+                            <EventCard key={event.id} event={event} className="w-60 md:w-64 flex-shrink-0" />
                         ))}
                     </div>
                     <ScrollBar orientation="horizontal" />
@@ -162,22 +160,12 @@ export default function Home() {
 
         <section id="events" className="w-full py-6 md:py-8 bg-secondary/20">
           <div className="container px-4 md:px-6">
-             <Tabs defaultValue="live" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto">
-                    <TabsTrigger value="live">Live Now ({liveEvents.length})</TabsTrigger>
-                    <TabsTrigger value="upcoming">Upcoming ({upcomingEvents.length})</TabsTrigger>
-                    <TabsTrigger value="past">Past Events ({pastEvents.length})</TabsTrigger>
-                </TabsList>
-                <TabsContent value="live">
-                    <EventCarousel title="Live Events" events={liveEvents} />
-                </TabsContent>
-                <TabsContent value="upcoming">
-                    <EventCarousel title="Upcoming Events" events={upcomingEvents} />
-                </TabsContent>
-                <TabsContent value="past">
-                    <EventCarousel title="Past Events" events={pastEvents} />
-                </TabsContent>
-            </Tabs>
+            <div className="space-y-8">
+              <EventCarousel title="Live Events" events={liveEvents} />
+              <EventCarousel title="Upcoming Events" events={upcomingEvents} />
+              <EventCarousel title="Past Events" events={pastEvents} />
+            </div>
+
              <div className="text-center mt-12">
                 <Button asChild variant="outline">
                     <Link href="/events">View All Events</Link>
