@@ -2,42 +2,60 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // USERS
-    // Allow anyone to read artist profiles for public display.
-    // Only the authenticated user can write to their own document.
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Rules for the 'users' collection
     match /users/{userId} {
-      allow read: if resource.data.role == 'artist';
-      allow write: if request.auth != null && request.auth.uid == userId;
+      // Any authenticated user can read user profiles (needed for listing artists).
+      allow read: if isAuthenticated();
+      // Only the user themselves can create or update their own profile.
+      allow write: if isAuthenticated() && request.auth.uid == userId;
     }
 
-    // EVENTS: Publicly readable, only artists/admins can create/update.
+    // Rules for the 'events' collection
     match /events/{eventId} {
+      // Anyone can read event details.
       allow read: if true;
-      allow create, update: if request.auth != null; // Simplified for this context
+      // Only authenticated users who are artists can create/update events.
+      allow write: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'artist';
     }
 
-    // MOVIES: Publicly readable, only admins can create/update.
+    // Rules for the 'movies' collection
     match /movies/{movieId} {
+      // Anyone can read movie details.
       allow read: if true;
-      allow create, update: if request.auth != null; // Simplified for this context
+       // Only authenticated users who are admins can add movies.
+      allow write: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // TICKETS: Users can only read/write their own tickets.
+    // Rules for the 'tickets' collection
     match /tickets/{ticketId} {
-        allow read: if request.auth != null && request.auth.uid == resource.data.userId;
-        allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      // A user can only create their own ticket.
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      // A user can only read their own tickets.
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      // No one can update or delete tickets through the client.
+      allow update, delete: if false;
+    }
+
+    // Rules for verification requests
+    match /verificationRequests/{requestId} {
+       // Only admins can read verification requests.
+      allow read: if isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      // Only artists can create them, and only admins can update them.
+      allow write: if isAuthenticated() && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'artist' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
     }
     
-    // VERIFICATION REQUESTS: Only admins can read/write.
-    match /verificationRequests/{requestId} {
-      allow read, write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // APP STATUS: Only admins can write.
-    match /app-status/{statusId} {
-        allow read: if true;
-        allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    // Default deny all other collections/paths
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
