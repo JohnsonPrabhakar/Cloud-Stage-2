@@ -4,7 +4,7 @@
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { PurchasedTicket } from '@/lib/types';
 import { useUsers } from './UserContext';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import { collection, addDoc, onSnapshot, serverTimestamp, query, where } from 'firebase/firestore';
 import { useAuth } from '@/hooks/useAuth';
 
