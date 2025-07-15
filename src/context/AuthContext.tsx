@@ -35,47 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    const ensureAdminExists = async () => {
-        // This is a simplified check. A more robust system might use a specific document ID for the admin.
-        const adminEmail = "admin@cloudstage.live";
-        const adminDocRef = doc(db, "users", "admin_user_placeholder_uid"); // Use a predictable ID to check
-
-        try {
-            const adminDoc = await getDoc(adminDocRef);
-            if (!adminDoc.exists()) {
-                // Admin does not exist, so create it.
-                // NOTE: This creates a placeholder user in auth. A real app would have a more secure setup process.
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, adminEmail, "admin123");
-                    const firebaseUser = userCredential.user;
-                    
-                    const adminUserData = {
-                        uid: firebaseUser.uid,
-                        name: "Admin",
-                        email: adminEmail,
-                        role: 'admin' as const,
-                        createdAt: serverTimestamp(),
-                    };
-                    
-                    // Use the actual UID for the document now.
-                    await setDoc(doc(db, "users", firebaseUser.uid), adminUserData);
-                    console.log("Default admin account created successfully.");
-                    // Log out the newly created user immediately so they can log in normally.
-                    await signOut(auth);
-                } catch(error: any) {
-                    if (error.code !== 'auth/email-already-in-use') {
-                       console.error("Failed to create default admin:", error);
-                    }
-                    // If email is in use, we assume the user doc exists or will be found by onAuthStateChanged.
-                }
-            }
-        } catch (e) {
-             console.error("Error checking for admin user:", e);
-        }
-    };
-
-    ensureAdminExists();
-
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const userDocRef = doc(db, "users", firebaseUser.uid);
@@ -91,7 +50,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             ...userData
           });
         } else {
-            // This can happen if a user is deleted from Firestore but not Auth
             setUser(null);
             await signOut(auth);
         }
@@ -109,12 +67,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, pass);
       const firebaseUser = userCredential.user;
       const userDocRef = doc(db, "users", firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
+      let userDoc = await getDoc(userDocRef);
+
+      // If the user document doesn't exist, create it (especially for the admin)
+      if (!userDoc.exists() && email === 'admin@cloudstage.live') {
+          const adminUserData = {
+              uid: firebaseUser.uid,
+              name: "Admin",
+              email: email,
+              role: 'admin' as const,
+              createdAt: serverTimestamp(),
+          };
+          await setDoc(userDocRef, adminUserData);
+          // Re-fetch the document after creating it
+          userDoc = await getDoc(userDocRef); 
+      }
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
         if (userData.role === 'admin' || userData.role === 'artist') {
           toast({ title: "Login Successful!" });
+           setUser({ // Manually set user to speed up redirect
+            uid: firebaseUser.uid,
+            email: firebaseUser.email!,
+            name: firebaseUser.displayName || userData.name,
+            role: userData.role,
+            ...userData
+          });
           if (userData.role === 'admin') router.push('/admin');
           if (userData.role === 'artist') router.push('/artist/dashboard');
         } else {
