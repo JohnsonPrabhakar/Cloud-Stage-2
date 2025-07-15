@@ -89,16 +89,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const firebaseUser = userCredential.user;
           await updateProfile(firebaseUser, { displayName: "Admin" });
           
-          const userDocRef = doc(db, "users", firebaseUser.uid);
-          await setDoc(userDocRef, {
+          const adminUserData = {
             uid: firebaseUser.uid,
             name: "Admin",
             email: email,
-            role: 'admin',
+            role: 'admin' as const,
             createdAt: serverTimestamp(),
-          });
+          };
+
+          const userDocRef = doc(db, "users", firebaseUser.uid);
+          await setDoc(userDocRef, adminUserData);
+
+          // Manually set user state and redirect to avoid race condition
+          setUser(adminUserData as AuthUser);
           toast({ title: "Admin Account Created", description: "Default admin account has been set up." });
-          // No need to sign in again, onAuthStateChanged will handle the redirect.
+          router.push('/admin');
         } catch (creationError: any) {
            toast({ variant: "destructive", title: "Admin Creation Failed", description: creationError.message });
         }
