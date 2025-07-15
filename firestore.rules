@@ -1,59 +1,45 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
+  
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/users/$(userId)).data;
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
-
-    function isRole(userId, role) {
-      return getUserData(userId).role == role;
-    }
-
+    
     match /users/{userId} {
-      // Allow public read for artist profiles, but only the user themselves or an admin can write.
-      allow read: if true;
-      allow write: if request.auth.uid == userId || isRole(request.auth.uid, 'admin');
+      allow read: if true; 
+      allow create: if true;
+      allow update: if isOwner(userId);
     }
-
+    
     match /events/{eventId} {
-      // Anyone can read event details.
       allow read: if true;
-      // Only an artist can create an event. Only the original artist or an admin can update/delete.
-      allow create: if isRole(request.auth.uid, 'artist');
-      allow update, delete: if isRole(request.auth.uid, 'admin') || resource.data.artistId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.artistId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.artistId == request.auth.uid;
     }
-
+    
     match /movies/{movieId} {
-        // Anyone can read movies
         allow read: if true;
-        // Only admins can create, update, or delete movies
-        allow write: if isRole(request.auth.uid, 'admin');
+        allow create, update: if isAuthenticated(); 
     }
 
     match /tickets/{ticketId} {
-      // A user can read their own ticket.
-      allow read: if request.auth.uid == resource.data.userId;
-      // A user can create their own ticket.
-      allow create: if request.auth.uid == request.resource.data.userId;
-      // Tickets cannot be updated or deleted by users.
-      allow update, delete: if false;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
     }
 
     match /verificationRequests/{requestId} {
-      // Only admins can read or write verification requests.
-      allow read, write: if isRole(request.auth.uid, 'admin');
+      allow read, create, update: if isAuthenticated();
     }
     
-    // Catch-all for any other collections
-    match /{document=**} {
-      allow read, write: if false;
+    match /appStatus/{statusId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
   }
 }
