@@ -1,42 +1,40 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read/write their own data.
-    // Anyone can read public artist profiles.
+    // Users can be read by any authenticated user (for artist lists)
+    // but only written to by the user themselves.
     match /users/{userId} {
       allow read: if request.auth != null;
       allow write: if request.auth.uid == userId;
     }
 
-    // Events are public to read. Only artists can create/update them.
-    // Admin role should be added for moderation if needed.
+    // Events are public, but can only be created/updated by artists or admins.
     match /events/{eventId} {
       allow read: if true;
-      allow write: if request.auth.token.role == "artist" || request.auth.token.role == "admin";
+      allow write: if request.auth != null && (request.auth.token.role == "artist" || request.auth.token.role == "admin");
     }
 
-    // Users can only read or create their own tickets.
+    // Tickets can only be created by the user who owns them,
+    // and can only be read by that same user.
     match /tickets/{ticketId} {
-      allow read, create: if request.auth.uid == request.resource.data.userId;
+        allow read, create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
 
-    // Movies are public to read. Only admins can add them.
+    // Movies are public, but can only be created by admins.
     match /movies/{movieId} {
       allow read: if true;
-      allow create: if request.auth.token.role == "admin";
+      allow create: if request.auth != null && request.auth.token.role == "admin";
     }
 
-    // Users can only manage their own subscriptions.
+    // Subscriptions can only be read or written by the user who owns them.
     match /subscriptions/{userId} {
-      allow read, write: if request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-
-    // Verification requests are write-only for artists and read-only for admins.
+    
+    // Verification requests can only be read or written to by admins
     match /verificationRequests/{requestId} {
-        allow create: if request.auth.token.role == "artist";
-        allow read, update: if request.auth.token.role == "admin";
+      allow read, write: if request.auth != null && request.auth.token.role == "admin";
+      allow create: if request.auth != null && request.auth.token.role == "artist";
     }
   }
 }
