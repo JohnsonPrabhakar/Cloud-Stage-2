@@ -145,8 +145,8 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   const hasActiveSubscription = user?.subscription && new Date(user.subscription.expiryDate) > new Date();
   const eventLimitReached = hasActiveSubscription && user.subscription!.eventCount >= 20;
 
-  const canWatch = hasPurchasedTicket || isEventOwner;
   const isEventOwner = user?.email === event.artistEmail;
+  const canWatch = hasPurchasedTicket || isEventOwner;
 
   const handleFollowToggle = () => {
     if (!user || !artist) {
