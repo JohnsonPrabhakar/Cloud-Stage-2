@@ -36,7 +36,7 @@ export default function Home() {
                     </p>
                     <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                         <Button asChild size="lg">
-                            <Link href="/movies">Explore Events</Link>
+                            <Link href="/events">Explore Events</Link>
                         </Button>
                         <Button asChild size="lg" variant="secondary">
                             <Link href="/login">Become an Artist</Link>
@@ -63,21 +63,21 @@ export default function Home() {
                 <TabsTrigger value="past">Past Events</TabsTrigger>
               </TabsList>
               <TabsContent value="live" className="mt-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                    {liveEvents.length > 0 ? (
                         liveEvents.map((event) => <EventCard key={event.id} event={event} />)
                     ) : <p className="col-span-full text-center text-muted-foreground">No live events right now. Check back soon!</p>}
                 </div>
               </TabsContent>
               <TabsContent value="upcoming" className="mt-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {upcomingEvents.length > 0 ? (
                         upcomingEvents.slice(0, 8).map((event) => <EventCard key={event.id} event={event} />)
                      ) : <p className="col-span-full text-center text-muted-foreground">No upcoming events scheduled.</p>}
                 </div>
               </TabsContent>
               <TabsContent value="past" className="mt-8">
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                      {pastEvents.length > 0 ? (
                         pastEvents.slice(0, 4).map((event) => <EventCard key={event.id} event={event} />)
                      ) : <p className="col-span-full text-center text-muted-foreground">No past events found.</p>}
@@ -86,7 +86,7 @@ export default function Home() {
             </Tabs>
              <div className="text-center mt-12">
                 <Button asChild variant="outline">
-                    <Link href="/movies">View All Events</Link>
+                    <Link href="/events">View All Events</Link>
                 </Button>
             </div>
           </div>
