@@ -108,7 +108,7 @@ export default function PurchasePageClient({ eventId }: { eventId: string }) {
             <Separator className="my-6" />
             <div className="flex justify-between items-center text-lg font-bold">
               <span>Total Price</span>
-              <span>{event.ticketPrice > 0 ? `₹${event.ticketPrice.toFixed(2)}` : 'Free'}</span>
+              <span>{event.ticketPrice > 0 ? `Rs. ${event.ticketPrice.toFixed(2)}` : 'Free'}</span>
             </div>
             
           </CardContent>

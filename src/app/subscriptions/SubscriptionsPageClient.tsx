@@ -11,7 +11,7 @@ import { useState } from 'react';
 const plans = [
     {
         name: 'Free',
-        price: '₹0',
+        price: 'Rs. 0',
         period: 'forever',
         features: [
             'Access to free events',
@@ -23,7 +23,7 @@ const plans = [
     },
     {
         name: 'Premium Monthly',
-        price: '₹99',
+        price: 'Rs. 99',
         period: '/ month',
         features: [
             'Access to all events (free & paid)',
@@ -36,7 +36,7 @@ const plans = [
     },
      {
         name: 'Premium Yearly',
-        price: '₹199',
+        price: 'Rs. 199',
         period: '/ year',
         features: [
             'All Premium features',

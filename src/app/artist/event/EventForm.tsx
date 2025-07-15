@@ -314,14 +314,14 @@ export default function EventForm({ eventId }: { eventId?: string }) {
               name="ticketPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ticket Price (INR)</FormLabel>
+                  <FormLabel>Ticket Price (Rs.)</FormLabel>
                   <TooltipProvider>
                       <Tooltip>
                           <TooltipTrigger asChild>
                               <FormControl>
                                   <Input
                                       type="number"
-                                      placeholder="e.g., 10"
+                                      placeholder="e.g., 100"
                                       {...field}
                                       disabled={!isVerified}
                                       value={isVerified ? field.value : 0}

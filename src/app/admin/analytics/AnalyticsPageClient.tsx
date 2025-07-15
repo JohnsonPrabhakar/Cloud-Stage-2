@@ -12,7 +12,7 @@ import { useArtists } from '@/hooks/useArtists';
 
 const COLORS = ['#800020', '#808000', '#FF8042', '#FFBB28', '#00C49F', '#0088FE', '#AF19FF'];
 
-const formatCurrency = (value: number) => `₹${value.toLocaleString()}`;
+const formatCurrency = (value: number) => `Rs. ${value.toLocaleString()}`;
 const formatNumber = (value: number) => value.toLocaleString();
 
 export default function AnalyticsPageClient() {
@@ -125,7 +125,7 @@ export default function AnalyticsPageClient() {
                             <LineChart data={filteredData.monthlyRevenue}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" />
-                                <YAxis tickFormatter={(val) => `₹${val/1000}k`} />
+                                <YAxis tickFormatter={(val) => `Rs. ${val/1000}k`} />
                                 <Tooltip formatter={(val) => formatCurrency(val as number)} />
                                 <Legend />
                                 <Line type="monotone" dataKey="revenue" stroke="#800020" />

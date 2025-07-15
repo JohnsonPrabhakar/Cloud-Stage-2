@@ -269,7 +269,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         {isOnline ? (
                             !canWatch && (
                             <Button onClick={handlePurchaseClick} size="lg">
-                                <Ticket className="mr-2" /> Get Ticket {event.ticketPrice > 0 ? `₹${event.ticketPrice.toFixed(2)}` : ''}
+                                <Ticket className="mr-2" /> Get Ticket {event.ticketPrice > 0 ? `Rs. ${event.ticketPrice.toFixed(2)}` : ''}
                             </Button>
                             )
                         ) : (
