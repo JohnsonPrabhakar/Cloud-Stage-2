@@ -13,6 +13,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { ArrowLeft } from 'lucide-react';
 
 
 const loginSchema = z.object({
@@ -115,6 +116,14 @@ export default function UserLoginPageClient() {
               <Link href="/login" className="underline hover:text-primary">
                 Login here
               </Link>
+            </div>
+            <div className="mt-6 text-center">
+                <Button variant="ghost" asChild>
+                    <Link href="/">
+                        <ArrowLeft className="mr-2 h-4 w-4"/>
+                        Back to Homepage
+                    </Link>
+                </Button>
             </div>
         </CardContent>
       </Card>
