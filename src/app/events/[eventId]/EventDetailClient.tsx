@@ -13,11 +13,12 @@ import { useAppStatus } from '@/hooks/useAppStatus';
 import { useToast } from '@/hooks/use-toast';
 import type { Event, Artist } from '@/lib/types';
 import { getYoutubeVideoId } from '@/lib/utils';
+import { useUsers } from '@/context/UserContext';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, Mic, Ticket, Play, ArrowLeft, ThumbsUp, Heart, PowerOff, Share2, UserPlus, Check, LogOut, Send, Bell } from 'lucide-react';
+import { Calendar, Clock, Mic, Ticket, Play, ArrowLeft, ThumbsUp, Heart, PowerOff, Share2, UserPlus, Check, LogOut, Send, Bell, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ArtistProfileCard } from '@/components/ArtistProfileCard';
 import { Input } from '@/components/ui/input';
@@ -101,10 +102,11 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   const router = useRouter();
   const { user } = useAuth();
   const { giveThumbsUp } = useEvents();
-  const { hasTicket } = useTickets();
+  const { hasTicket, purchaseTicket } = useTickets();
   const { artists, followArtist, unfollowArtist } = useArtists();
   const { isOnline } = useAppStatus();
   const { toast } = useToast();
+  const { incrementEventCount } = useUsers();
   
   const [artist, setArtist] = useState<Artist | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -139,8 +141,11 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
   const embedUrl = youtubeVideoId ? `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1` : null;
   const eventDate = new Date(event.date);
   const hasPurchasedTicket = hasTicket(event.id, user?.email);
-  const isFree = event.ticketPrice === 0;
-  const canWatch = hasPurchasedTicket || isFree;
+
+  const hasActiveSubscription = user?.subscription && new Date(user.subscription.expiryDate) > new Date();
+  const eventLimitReached = hasActiveSubscription && user.subscription!.eventCount >= 20;
+
+  const canWatch = hasPurchasedTicket || isEventOwner;
   const isEventOwner = user?.email === event.artistEmail;
 
   const handleFollowToggle = () => {
@@ -156,6 +161,13 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
       toast({ title: `Successfully followed ${artist.name}!` });
     }
   };
+  
+  const handlePremiumAccess = () => {
+      if (!user) return;
+      purchaseTicket(event.id, user.email);
+      incrementEventCount(user.email);
+      toast({ title: "✅ Event Unlocked!", description: "You've used one premium event credit." });
+  };
 
   const handlePurchaseClick = () => {
     if (!isOnline) {
@@ -169,6 +181,35 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
       setIsReminderSet(true);
       toast({ title: "Reminder set successfully!", description: `We'll notify you before "${event.title}" starts.` });
   };
+
+  const renderActionButton = () => {
+    if (isEventOwner || canWatch) return null; // No button if they own it or have a ticket
+    if (!isOnline) {
+        return <Button disabled variant="outline" size="lg"><PowerOff className="mr-2"/> Ticketing Offline</Button>;
+    }
+    if (hasActiveSubscription) {
+        if (eventLimitReached) {
+            return <Button disabled size="lg" variant="destructive">Monthly Limit Reached</Button>;
+        }
+        return <Button onClick={handlePremiumAccess} size="lg"><Star className="mr-2"/> Use Premium Access</Button>;
+    }
+    return (
+        <Button onClick={handlePurchaseClick} size="lg">
+            <Ticket className="mr-2"/> Get Ticket {event.ticketPrice > 0 ? `₹${event.ticketPrice.toFixed(2)}` : ' (Free)'}
+        </Button>
+    );
+  };
+
+  const renderPremiumBadge = () => {
+    if (!hasActiveSubscription) return null;
+
+    if (eventLimitReached) {
+        return <Badge variant="destructive"><Star className="mr-1.5 h-3 w-3"/>Limit Reached: (20/20 used)</Badge>
+    }
+
+    return <Badge variant="default" className="bg-green-600"><Star className="mr-1.5 h-3 w-3"/>Premium Access ({user?.subscription?.eventCount}/20 used)</Badge>
+  }
+
 
   return (
     <>
@@ -245,6 +286,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                         <div className="flex items-center gap-2"><Clock className="w-4 h-4"/>{format(eventDate, 'p')}</div>
                         <div className="flex items-center gap-2"><Mic className="w-4 h-4"/>{event.category}</div>
                          {isReminderSet && <Badge variant="secondary"><Bell className="mr-1.5 h-3 w-3"/>Reminder is set</Badge>}
+                         {renderPremiumBadge()}
                     </div>
                     
                     <Separator className="my-6" />
@@ -269,17 +311,7 @@ export default function EventDetailClient({ event }: { event: Event | undefined 
                                 <LogOut className="mr-2" /> Leave Event
                             </Button>
                         </div>
-                        {isOnline ? (
-                            !canWatch && (
-                            <Button onClick={handlePurchaseClick} size="lg">
-                                <Ticket className="mr-2" /> Get Ticket {event.ticketPrice > 0 ? `Rs. ${event.ticketPrice.toFixed(2)}` : ''}
-                            </Button>
-                            )
-                        ) : (
-                            <Button disabled variant="outline" size="lg">
-                                <PowerOff className="mr-2"/> Ticketing Offline
-                            </Button>
-                        )}
+                        {renderActionButton()}
                     </CardFooter>
                 </Card>
             </div>

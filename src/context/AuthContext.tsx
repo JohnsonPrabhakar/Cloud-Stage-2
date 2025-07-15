@@ -28,13 +28,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { toast } = useToast();
   const { artists } = useArtists();
-  const { users, addUser } = useUsers();
+  const { users, addUser, checkAndResetSubscription } = useUsers();
 
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        const fullUser = users.find(u => u.email === parsedUser.email);
+        if (fullUser) {
+            const freshUser = checkAndResetSubscription(fullUser);
+            setUser({ ...parsedUser, subscription: freshUser.subscription });
+        } else {
+             setUser(parsedUser);
+        }
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
@@ -43,11 +50,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
+  const storeUserSession = (userToStore: AuthUser) => {
+      try {
+          const sessionData = { ...userToStore };
+          if (sessionData.profilePictureUrl && sessionData.profilePictureUrl.startsWith('data:image')) {
+              // Don't store large image data in the session object
+              delete sessionData.profilePictureUrl;
+          }
+          localStorage.setItem('user', JSON.stringify(sessionData));
+      } catch (error) {
+           console.error("Error saving user to localStorage:", error);
+            toast({
+                variant: "destructive",
+                title: "Session Error",
+                description: "Could not save user session. The profile picture might be too large.",
+            });
+      }
+  }
+
+
   const loginAdminOrArtist = (email: string, pass: string) => {
     // Check for admin
     if (email === 'admin@cloudstage.live' && pass === 'PASSWORD') {
       const loggedInUser: AuthUser = { email, role: 'admin', name: 'Admin User' };
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
+      storeUserSession(loggedInUser);
       setUser(loggedInUser);
       router.push('/admin');
       return;
@@ -62,24 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: artist.name,
             profilePictureUrl: artist.profilePictureUrl
         };
-        
-        // Prevent storing large base64 images in the user session
-        try {
-            const userToStore = {...loggedInUser};
-            if (userToStore.profilePictureUrl && userToStore.profilePictureUrl.startsWith('data:image')) {
-                // Don't store large image data in the session object
-                delete userToStore.profilePictureUrl;
-            }
-            localStorage.setItem('user', JSON.stringify(userToStore));
-        } catch (error) {
-            console.error("Error saving user to localStorage:", error);
-            toast({
-                variant: "destructive",
-                title: "Session Error",
-                description: "Could not save user session. The profile picture might be too large.",
-            });
-        }
-        
+        storeUserSession(loggedInUser);
         setUser(loggedInUser);
         router.push('/artist/dashboard');
         return;
@@ -93,16 +102,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginUser = (email: string, pass: string) => {
-    const registeredUser = users.find(u => u.email === email);
+    let registeredUser = users.find(u => u.email === email);
     if(registeredUser && registeredUser.password === pass) {
+        
+        registeredUser = checkAndResetSubscription(registeredUser);
+
         const loggedInUser: AuthUser = { 
             name: registeredUser.name,
             email: registeredUser.email,
             phone: registeredUser.phone,
             role: 'user',
-            profilePictureUrl: registeredUser.profilePictureUrl
+            profilePictureUrl: registeredUser.profilePictureUrl,
+            subscription: registeredUser.subscription,
         };
-        localStorage.setItem('user', JSON.stringify(loggedInUser));
+        storeUserSession(loggedInUser);
         setUser(loggedInUser);
         
         const redirectTo = sessionStorage.getItem('redirectToAfterLogin');
@@ -140,7 +153,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email,
           phone,
           password: pass,
-          profilePictureUrl: `https://api.dicebear.com/8.x/initials/svg?seed=${name}`
+          profilePictureUrl: `https://api.dicebear.com/8.x/initials/svg?seed=${name}`,
+          subscription: null,
       };
       addUser(newUser);
       
@@ -155,9 +169,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: newUser.email, 
           phone: newUser.phone, 
           role: 'user',
-          profilePictureUrl: newUser.profilePictureUrl
+          profilePictureUrl: newUser.profilePictureUrl,
+          subscription: newUser.subscription,
       };
-      localStorage.setItem('user', JSON.stringify(loggedInUser));
+      storeUserSession(loggedInUser);
       setUser(loggedInUser);
 
       const redirectTo = sessionStorage.getItem('redirectToAfterLogin');

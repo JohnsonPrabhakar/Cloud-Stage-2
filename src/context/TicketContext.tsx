@@ -1,12 +1,14 @@
+
 'use client';
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import type { PurchasedTicket, GuestDetails } from '@/lib/types';
+import { useUsers } from './UserContext';
 
 
 interface TicketContextType {
   purchasedTickets: PurchasedTicket[];
-  purchaseTicket: (eventId: string, userEmail: string, guestDetails?: GuestDetails) => void;
+  purchaseTicket: (eventId: string, userEmail: string, guestDetails?: GuestDetails, isPremium?: boolean) => void;
   hasTicket: (eventId: string, userEmail?: string | null) => boolean;
 }
 
@@ -14,6 +16,7 @@ export const TicketContext = createContext<TicketContextType | undefined>(undefi
 
 export function TicketProvider({ children }: { children: ReactNode }) {
   const [purchasedTickets, setPurchasedTickets] = useState<PurchasedTicket[]>([]);
+  const { incrementEventCount } = useUsers();
 
   useEffect(() => {
     try {
@@ -32,8 +35,12 @@ export function TicketProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('purchasedTickets', JSON.stringify(updatedTickets));
   };
 
-  const purchaseTicket = (eventId: string, userEmail: string, guestDetails?: GuestDetails) => {
+  const purchaseTicket = (eventId: string, userEmail: string, guestDetails?: GuestDetails, isPremium: boolean = false) => {
     if (hasTicket(eventId, userEmail)) return; // Prevent duplicate tickets
+
+    if(isPremium) {
+        incrementEventCount(userEmail);
+    }
 
     const newTicket: PurchasedTicket = {
         eventId,

@@ -2,8 +2,9 @@
 'use client';
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
-import type { User as RegisteredUser } from '@/lib/users';
+import type { User as RegisteredUser, Subscription } from '@/lib/users';
 import { dummyUsers } from '@/lib/users';
+import { add } from 'date-fns';
 
 const LOCALSTORAGE_SIZE_LIMIT = 4 * 1024 * 1024; // 4MB
 
@@ -54,6 +55,9 @@ interface UserContextType {
   users: RegisteredUser[];
   addUser: (user: RegisteredUser) => void;
   updateUser: (user: RegisteredUser) => void;
+  subscribeUser: (email: string) => void;
+  incrementEventCount: (email: string) => void;
+  checkAndResetSubscription: (user: RegisteredUser) => RegisteredUser;
 }
 
 export const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -62,7 +66,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useLocalStorage<RegisteredUser[]>('users', dummyUsers);
   
   const addUser = (user: RegisteredUser) => {
-    setUsers(prevUsers => [user, ...prevUsers]);
+    setUsers(prevUsers => [{ ...user, subscription: null }, ...prevUsers]);
   };
   
   const updateUser = (updatedUserData: RegisteredUser) => {
@@ -70,9 +74,48 @@ export function UserProvider({ children }: { children: ReactNode }) {
       user.email === updatedUserData.email ? updatedUserData : user
     ));
   };
+  
+  const subscribeUser = (email: string) => {
+      setUsers(prevUsers => prevUsers.map(user => {
+          if (user.email === email) {
+              const now = new Date();
+              const newSubscription: Subscription = {
+                  planType: 'premium',
+                  startDate: now.toISOString(),
+                  expiryDate: add(now, { days: 30 }).toISOString(),
+                  eventCount: 0,
+              };
+              return { ...user, subscription: newSubscription };
+          }
+          return user;
+      }));
+  };
+  
+  const incrementEventCount = (email: string) => {
+      setUsers(prevUsers => prevUsers.map(user => {
+          if (user.email === email && user.subscription) {
+              const updatedSubscription = {
+                  ...user.subscription,
+                  eventCount: user.subscription.eventCount + 1,
+              };
+              return { ...user, subscription: updatedSubscription };
+          }
+          return user;
+      }));
+  };
+
+  const checkAndResetSubscription = (user: RegisteredUser): RegisteredUser => {
+    if (user.subscription && new Date(user.subscription.expiryDate) < new Date()) {
+      const updatedUser = { ...user, subscription: null };
+      updateUser(updatedUser);
+      return updatedUser;
+    }
+    return user;
+  };
+
 
   return (
-    <UserContext.Provider value={{ users, addUser, updateUser }}>
+    <UserContext.Provider value={{ users, addUser, updateUser, subscribeUser, incrementEventCount, checkAndResetSubscription }}>
       {children}
     </UserContext.Provider>
   );
