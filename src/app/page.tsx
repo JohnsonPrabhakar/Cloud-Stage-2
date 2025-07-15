@@ -23,7 +23,7 @@ function EventCarousel({ title, events }: { title: string; events: any[] }) {
                 <ScrollArea>
                     <div className="flex space-x-4 pb-4">
                         {events.map((event) => (
-                            <EventCard key={event.id} event={event} className="w-64" />
+                            <EventCard key={event.id} event={event} className="w-56" />
                         ))}
                     </div>
                     <ScrollBar orientation="horizontal" />
