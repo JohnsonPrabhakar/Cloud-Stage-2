@@ -161,8 +161,8 @@ export default function Home() {
         <section id="events" className="w-full py-6 md:py-8 bg-secondary/20">
           <div className="container px-4 md:px-6">
             <div className="space-y-8">
-              <EventCarousel title="Live Events" events={liveEvents} />
               <EventCarousel title="Upcoming Events" events={upcomingEvents} />
+              <EventCarousel title="Live Events" events={liveEvents} />
               <EventCarousel title="Past Events" events={pastEvents} />
             </div>
 
