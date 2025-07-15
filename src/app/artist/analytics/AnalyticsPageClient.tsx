@@ -14,7 +14,7 @@ import { Users, Ticket, DollarSign, BarChart2 } from 'lucide-react';
 import type { Event } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const formatCurrency = (value: number) => `$${value.toLocaleString()}`;
+const formatCurrency = (value: number) => `₹${value.toLocaleString()}`;
 const formatNumber = (value: number) => value.toLocaleString();
 
 export default function ArtistAnalyticsPageClient() {

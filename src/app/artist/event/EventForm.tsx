@@ -314,7 +314,7 @@ export default function EventForm({ eventId }: { eventId?: string }) {
               name="ticketPrice"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ticket Price (USD)</FormLabel>
+                  <FormLabel>Ticket Price (INR)</FormLabel>
                   <TooltipProvider>
                       <Tooltip>
                           <TooltipTrigger asChild>
